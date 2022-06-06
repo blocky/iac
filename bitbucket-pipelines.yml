@@ -1,0 +1,17 @@
+image: python:3.10
+
+pipelines:
+  default:
+    - parallel:
+        - step:
+            name: Test
+            caches:
+              - pip
+            script:
+              - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+              - make test
+        - step:
+            name: Lint code
+            script:
+              - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+              - make lint
