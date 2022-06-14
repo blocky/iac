@@ -1,29 +1,60 @@
-# README #
+# Sequencer
 
-This README would normally document whatever steps are necessary to get your application up and running.
+BLOCKY Sequencer implements a trusted sequencer service as describe in the ZipperChain white paper.
 
-### What is this repository for? ###
+## Installation
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+Install [Miniconda3](https://docs.conda.io/en/latest/miniconda.html#linux-installers). 
 
-### How do I get set up? ###
+	wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+	bash Miniconda3-latest-Linux-x86_64.sh
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+Set up a conda environment
 
-### Contribution guidelines ###
+	conda create --name bky-seq python=3.10 pip
 
-* Writing tests
-* Code review
-* Other guidelines
+Activate the environment
 
-### Who do I talk to? ###
+	conda activate bky-seq
 
-* Repo owner or admin
-* Other community or team contact
+Install all the python dependencies
+
+	pip install -r requirements.txt
+
+Run the tests with
+
+	make test
+
+Make sure your code passes standard python formatting with
+
+	make lint
+
+When you want to clean up 
+
+	conda deactivate
+	conda remove -n bky-seq --all
+	make veryclean
+
+
+## Running
+
+To run the Sequencer gateway
+
+	make flask
+
+You can access the gateway at http://127.0.0.1:5000/ 
+
+
+## Testing
+
+To run Sequencer unit tests
+
+	make test-unit
+
+You can also execute live Sequencer tests against a running gateway 
+
+	make test-live
+
+To check the quality of the code
+
+	make lint
