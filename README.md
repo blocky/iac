@@ -25,9 +25,7 @@ Run the tests with
 
 	make test
 
-Make sure your code passes standard python formatting with
-
-	make lint
+For more on testing see [testing](#testing).
 
 When you want to clean up
 
@@ -40,12 +38,12 @@ When you want to clean up
 
 To run the Sequencer gateway
 
-	make flask
+	make run
 
 You can access the gateway at http://127.0.0.1:5000/
 
 
-## Testing
+## Testing <a name="testing"></a>
 
 To run Sequencer unit tests
 
