@@ -4,7 +4,7 @@ BLOCKY Sequencer implements a trusted sequencer service as describe in the Zippe
 
 ## Installation
 
-Install [Miniconda3](https://docs.conda.io/en/latest/miniconda.html#linux-installers). 
+Install [Miniconda3](https://docs.conda.io/en/latest/miniconda.html#linux-installers).
 
 	wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 	bash Miniconda3-latest-Linux-x86_64.sh
@@ -29,7 +29,7 @@ Make sure your code passes standard python formatting with
 
 	make lint
 
-When you want to clean up 
+When you want to clean up
 
 	conda deactivate
 	conda remove -n bky-seq --all
@@ -42,7 +42,7 @@ To run the Sequencer gateway
 
 	make flask
 
-You can access the gateway at http://127.0.0.1:5000/ 
+You can access the gateway at http://127.0.0.1:5000/
 
 
 ## Testing
@@ -51,7 +51,7 @@ To run Sequencer unit tests
 
 	make test-unit
 
-You can also execute live Sequencer tests against a running gateway 
+You can also execute live Sequencer tests against a running gateway
 
 	make test-live
 
