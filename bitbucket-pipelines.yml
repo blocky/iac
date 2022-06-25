@@ -1,17 +1,56 @@
-image: python:3.10
+image: continuumio/miniconda3:latest
+
+definitions:
+  caches:
+    conda: /opt/conda/envs
+  steps:
+    - step: &clear-cache
+        name: Clear cache
+        script:
+          - pipe: atlassian/bitbucket-clear-cache:3.1.1
+            variables:
+              BITBUCKET_USERNAME: $BITBUCKET_USER_NAME
+              BITBUCKET_APP_PASSWORD: $BITBUCKET_APP_PASSWORD
+              CACHES: [ "conda" ]
+        condition:
+          changesets:
+            includePaths:
+              - environment.yaml
+              - poetry.lock
+    - step: &install
+        name: Install
+        caches:
+          - conda
+        script:
+          - conda install -c conda-forge mamba
+          - mamba env update -n sequencer -f environment.yaml
+          - conda activate sequencer
+          - poetry install
+        condition:
+          changesets:
+            includePaths:
+              - environment.yaml
+              - poetry.lock
+    - step: &test
+        name: Test
+        caches:
+          - conda
+        script:
+          - conda activate sequencer
+          - make test
+    - step: &lint
+        name: Lint
+        caches:
+          - conda
+        script:
+          - conda activate sequencer
+          - make lint
 
 pipelines:
   default:
+    - step: *clear-cache
+    - step: *install
     - parallel:
-        - step:
-            name: Test
-            caches:
-              - pip
-            script:
-              - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-              - make test
-        - step:
-            name: Lint code
-            script:
-              - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-              - make lint
+      - step: *test
+      - step: *lint
+
