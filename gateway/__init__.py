@@ -1,1 +1,1 @@
-from .gateway import Gateway  # noqa: F401
+from .gateway import hello_world
