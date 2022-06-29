@@ -5,13 +5,13 @@ from .serializers import HeartbeatSerializer, AddToSequenceSerializer, Attestati
 
 
 class HeartbeatHandler:
-    def run(self, _args:dict=None, _body:dict=None) -> dict:
+    def run(self, _args: dict = None, _body: dict = None) -> dict:
         healthy = Heartbeat(HeartbeatStatus.HEALTHY)
         return HeartbeatSerializer().dump(healthy)
 
 
 class AddToSequenceHandler:
-    def run(self, _args:dict=None, body:dict=None) -> dict:
+    def run(self, _args: dict = None, body: dict = None) -> dict:
         clean_body = AddToSequenceSerializer().load(body)
 
         fake_attestation = Attestation(

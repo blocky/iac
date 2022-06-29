@@ -2,6 +2,7 @@ import json
 
 import requests
 
+
 def test_gateway_404(gateway_fixture):
     r = requests.get("http://127.0.0.1:5000/not-an-endpoint")
     assert r.status_code == 404
@@ -30,7 +31,7 @@ def test_gateway_400_extra_args(gateway_fixture):
 
 
 def test_gateway_400_non_json_content_type(gateway_fixture):
-    r = requests.post("http://127.0.0.1:5000/sequence", {"data":"abc123"})
+    r = requests.post("http://127.0.0.1:5000/sequence", {"data": "abc123"})
     assert r.status_code == 400
 
     body = json.loads(r.text)
