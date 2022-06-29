@@ -2,7 +2,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 run:
-	@export FLASK_APP=gateway/gateway && flask run
+	@FLASK_ENV=development FLASK_APP=gateway/gateway flask run
 
 test-unit:
 	@py.test tests/unit

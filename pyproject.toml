@@ -8,6 +8,7 @@ authors = ["BLOCKY <info@blocky.rocks>"]
 Flask = "^2.1.2"
 python = "^3.10"
 get-project-root = "^0.2"
+marshmallow = "^3.17.0"
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.7.4"
