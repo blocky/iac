@@ -12,9 +12,13 @@ test-live:
 
 test: test-unit
 
-lint:
+format:
 	@echo "\n${BLUE}Running Black against source and test files...${NC}\n"
 	@black .
+
+lint:
+	@echo "\n${BLUE}Running Black against source and test files...${NC}\n"
+	@black . --check
 	@echo "\n${BLUE}Running Pylint against source and test files...${NC}\n"
 	@pylint **/*.py
 	@echo "\n${BLUE}Running Flake8 against source and test files...${NC}\n"
