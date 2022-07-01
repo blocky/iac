@@ -1,7 +1,7 @@
 import sys
 
-from get_project_root.get_project_root import root_path
+from utils.utils import ROOT_PATH
 
-sys.path.insert(0, root_path())
+sys.path.insert(0, ROOT_PATH)
 
 import gateway  # noqa # pylint: disable=unused-import, wrong-import-position

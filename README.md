@@ -39,6 +39,29 @@ For more on testing see [testing](#testing).  When you want to clean up run:
     conda remove -n sequencer --all
     make veryclean
 
+## Setting up EC2 Nitro infrastructure
+
+The `iac` command provides the infrastructure as code (IAC) to set up and tear down EC2 Nitro infrastructure.
+To familiarize yourself with the command run
+
+    python -m iac -h
+
+The workflow to create an EC2 instance described in the `setup/config.toml` file is
+
+    python -m iac key create
+    python -m iac instance create
+
+to see installed infrastructure
+
+    python -m iac key list
+    python -m iac instance list
+
+and to tear down the infrastructure
+
+    python -m iac key delete
+    python -m iac instance terminate
+
+
 ## Running
 
 To run the Sequencer gateway

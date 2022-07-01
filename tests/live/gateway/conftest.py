@@ -6,7 +6,7 @@ import time
 
 import psutil
 import pytest
-from get_project_root.get_project_root import root_path
+from utils.utils import ROOT_PATH
 
 LOGGER = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ def gateway_fixture():
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
-        cwd=root_path(),
+        cwd=ROOT_PATH,
     )
 
     time.sleep(1)  # let flask start up for the test

@@ -4,11 +4,18 @@ version = "0.0.1"
 description = ""
 authors = ["BLOCKY <info@blocky.rocks>"]
 
+packages =  [
+    { include = "iac" }
+]
+
 [tool.poetry.dependencies]
+boto3 = "^1.24.15"
+click = "^8.1.3"
+environs = "^9.5.0"
 Flask = "^2.1.2"
-python = "^3.10"
-get-project-root = "^0.2"
 marshmallow = "^3.17.0"
+python = "^3.10"
+requests = "^2.28.0"
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.7.4"
@@ -16,11 +23,12 @@ black = { extras = ["d"], version = "^22.3.0" }
 coverage = { extras = ["toml"], version = "^6.4.1" }
 flake8 = "^4.0.1"
 flake8-pyproject = "^0.9.0"
+flatdict = "^4.0.1"
 pylint = "^2.14.3"
 pytest = "^6.2.1"
 pytest-cov = "^3.0.0"
-requests = "^2.28.0"
 psutil = "^5.9.1"
+requests = "^2.28.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -137,7 +145,7 @@ attr-naming-style = "snake_case"
 # Regular expression matching correct attribute names. Overrides attr-naming-
 # style. If left empty, attribute names will be checked with the set naming
 # style.
-attr-rgx = "[a-z_][a-z0-9_]{2,}$"
+attr-rgx = "[a-z_][a-z0-9_]{1,}$"
 
 # Bad variable names which should always be refused, separated by a comma.
 bad-names = ["foo", "bar", "baz", "toto", "tutu", "tata"]
@@ -152,7 +160,7 @@ class-attribute-naming-style = "any"
 # Regular expression matching correct class attribute names. Overrides class-
 # attribute-naming-style. If left empty, class attribute names will be checked
 # with the set naming style.
-class-attribute-rgx = "([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$"
+class-attribute-rgx = "([A-Za-z_][A-Za-z0-9_]{1,30}|(__.*__))$"
 
 # Naming style matching correct class constant names.
 class-const-naming-style = "UPPER_CASE"
@@ -592,6 +600,7 @@ exclude = [
 [tool.bandit]
 targets = [
     'gateway',
+    'iac',
 ]
 exclude_dirs = [
     "tests",
