@@ -2,7 +2,7 @@ image: continuumio/miniconda3:latest
 
 definitions:
   caches:
-    conda-bky-2679: /opt/conda/envs
+    conda: /opt/conda/envs
   steps:
     - step: &clear-cache
         name: Clear cache
@@ -11,16 +11,17 @@ definitions:
             variables:
               BITBUCKET_USERNAME: $BITBUCKET_USER_NAME
               BITBUCKET_APP_PASSWORD: $BITBUCKET_APP_PASSWORD
-              CACHES: [ "conda-bky-2679" ]
+              CACHES: [ "conda" ]
         condition:
           changesets:
             includePaths:
               - environment.yaml
               - poetry.lock
+              - bitbucket-pipelines.yml
     - step: &install
         name: Install
         caches:
-          - conda-bky-2679
+          - conda
         script:
           - conda install -c conda-forge mamba
           - mamba env update -n sequencer -f environment.yaml
@@ -31,17 +32,19 @@ definitions:
             includePaths:
               - environment.yaml
               - poetry.lock
+              - bitbucket-pipelines.yml
     - step: &test
         name: Test
         caches:
-          - conda-bky-2679
+          - conda
         script:
           - conda activate sequencer
+          - make config
           - make test
     - step: &lint
         name: Lint
         caches:
-          - conda-bky-2679
+          - conda
         script:
           - conda activate sequencer
           - make lint

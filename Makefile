@@ -12,6 +12,9 @@ test-live:
 
 test: test-unit
 
+config:
+	@./sh/make_config.sh
+
 format:
 	@echo "\n${BLUE}Running Black against source and test files...${NC}\n"
 	@black .

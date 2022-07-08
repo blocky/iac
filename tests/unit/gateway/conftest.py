@@ -1,16 +1,7 @@
-import logging
-import os
-import signal
-import subprocess
-import time
-
-import psutil
 import pytest
-from utils.utils import ROOT_PATH
 
-from gateway import auth
+from gateway import app, auth
 
-LOGGER = logging.getLogger(__name__)
 
 ZPR_CHAIN_ID = "chain-name"
 ZPR_JWT_ALGO = "RS256"
@@ -85,43 +76,34 @@ tpYI879omhjckYrGfVkhIEMCAwEAAQ==
 """
 
 
-def terminate_process(parent_pid, sig=signal.SIGKILL):
-    try:
-        parent = psutil.Process(parent_pid)
-    except psutil.NoSuchProcess:
-        return
-    children = parent.children(recursive=True)
-    for process in children:
-        process.send_signal(sig)
-    parent.send_signal(sig)
+@pytest.fixture
+def client():
+    app.config["TESTING"] = True
+    app.config["JWT_PUBLIC_KEY"] = ZPR_PUBLIC_KEY
+    app.config["JWT_ALGORITHM"] = ZPR_JWT_ALGO
+
+    with app.test_client() as client:
+        return client
 
 
-@pytest.fixture()
-def gateway_fixture():
-    LOGGER.info("Setting Up Gateway Fixture...")
+@pytest.fixture
+def private_key():
+    return ZPR_PRIVATE_KEY
 
-    flask_env = os.environ.copy()
-    flask_env["FLASK_APP"] = "gateway/gateway"
-    flask_env["BKY_SEQ_GATEWAY_JWT_PUBLIC_KEY"] = ZPR_PUBLIC_KEY
-    flask_env["BKY_SEQ_GATEWAY_JWT_ALGORITHM"] = ZPR_JWT_ALGO
 
-    proc = subprocess.Popen(
-        "flask run".split(),
-        env=flask_env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        cwd=ROOT_PATH,
-    )
-
-    time.sleep(1)  # let flask start up for the test
-
-    yield
-
-    LOGGER.info("Tearing Down Gateway Fixture...")
-    terminate_process(proc.pid)
+@pytest.fixture
+def public_key():
+    return ZPR_PUBLIC_KEY
 
 
 @pytest.fixture
 def token():
     return auth.make_token(ZPR_CHAIN_ID, ZPR_PRIVATE_KEY, ZPR_JWT_ALGO)
+
+
+@pytest.fixture
+def flask_config():
+    return {
+        "JWT_ALGORITHM": "RS256",
+        "JWT_PUBLIC_KEY": "public_key",
+    }

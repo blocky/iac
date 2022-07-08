@@ -1,12 +1,25 @@
 import datetime
 
-from .models import Attestation, Heartbeat, HeartbeatStatus
-from .serializers import HeartbeatSerializer, AddToSequenceSerializer, AttestationSerializer
+from .models import (
+    Attestation,
+    Heartbeat,
+    HeartbeatStatus,
+)
+from .serializers import (
+    HeartbeatSerializer,
+    AddToSequenceSerializer,
+    AttestationSerializer,
+    ConfigurationSerializer,
+)
 
 
 class HeartbeatHandler:
+    def __init__(self, config):
+        self.config = config
+
     def run(self, _args: dict = None, _body: dict = None) -> dict:
-        healthy = Heartbeat(HeartbeatStatus.HEALTHY)
+        config = ConfigurationSerializer().load_with_custom_error(self.config)
+        healthy = Heartbeat(HeartbeatStatus.HEALTHY, config)
         return HeartbeatSerializer().dump(healthy)
 
 

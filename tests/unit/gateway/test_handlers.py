@@ -1,12 +1,24 @@
-from gateway import handlers, models
+import pytest
+
+from gateway import handlers, models, serializers
 
 
-def test_HeartbeatHandler_run():
-    result = handlers.HeartbeatHandler().run()
+def test_heartbeat_handler__run__happy_path(flask_config):
+    result = handlers.HeartbeatHandler(flask_config).run()
     assert result["status"] == models.HeartbeatStatus.HEALTHY.value
+    assert result["configuration"] == {
+        "JWT_ALGORITHM": "RS256",
+        "JWT_PUBLIC_KEY": "public_key",
+    }
 
 
-def test_AddToSequenceHandler():
+def test_heartbeat_hander__run__misconfigured():
+    with pytest.raises(serializers.ConfigurationLoadError) as e:
+        handlers.HeartbeatHandler({}).run()
+    assert str(e.value) == "Invalid configuration"
+
+
+def test_add_to_sequence_handler__run__happy_path():
     body = {"data": "data-to-sign"}
     result = handlers.AddToSequenceHandler().run(body=body)
     assert result["attestation"] == "fake-attestation"

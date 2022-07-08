@@ -1,3 +1,9 @@
+# local config for gateway
+gateway/config/*
+
+# Python environment
+envs/
+
 # Python artifacts
 *.py[cod]
 *.pytest_cache

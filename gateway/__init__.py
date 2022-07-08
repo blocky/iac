@@ -1,1 +1,2 @@
-from . import handlers
+from .gateway import app
+from . import handlers, auth
