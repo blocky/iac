@@ -4,8 +4,10 @@ from .instance import (
     create_instance,
     terminate_instance,
     list_instances,
+    fetch_instance,
     IACInstanceWarning,
     IACInstanceError,
+    Instance,
 )
 from .key import (
     create_key_pair,
@@ -13,4 +15,5 @@ from .key import (
     list_key_pairs,
     IACKeyWarning,
     IACKeyError,
+    Key,
 )

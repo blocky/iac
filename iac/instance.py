@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import TypeVar
 
 import botocore.client
 
@@ -15,15 +16,34 @@ class IACInstanceWarning(IACWarning):
     pass
 
 
+InstanceSelf = TypeVar("InstanceSelf", bound="Instance")
+
+
 @dataclass(frozen=True)
 class Instance:
     name: str
     id: str = None
     key_name: str = None
     tags: [iac.aws.Tag] = None
+    public_dns_name: str = None
+
+    @staticmethod
+    def from_aws_instance(inst: dict) -> InstanceSelf:
+        tags = inst["Tags"]
+        name = next((t["Value"] for t in tags if t["Key"] == "Name"), None)
+        return Instance(
+            name=name,
+            id=inst["InstanceId"],
+            key_name=inst["KeyName"],
+            tags=tags,
+            public_dns_name=inst["PublicDnsName"],
+        )
 
 
-def describe_instances(ec2: botocore.client.BaseClient, instance_name: str = None) -> dict:
+def describe_instances(
+    ec2: botocore.client.BaseClient,
+    instance_name: str = None,
+) -> [Instance]:
     filters = [
         {"Name": "tag:" + DEPLOYMENT_TAG, "Values": [SEQUENCER_TAG]},
         {"Name": "instance-state-name", "Values": ["pending", "running"]},
@@ -32,7 +52,28 @@ def describe_instances(ec2: botocore.client.BaseClient, instance_name: str = Non
         filters.append(
             {"Name": "tag:Name", "Values": [instance_name]},
         )
-    return ec2.describe_instances(Filters=filters)
+
+    res = ec2.describe_instances(Filters=filters)
+
+    return list(
+        Instance.from_aws_instance(inst) for r in res["Reservations"] for inst in r["Instances"]
+    )
+
+
+def _validate_running(instances: [Instance], instance_name: str):
+    if len(instances) == 0:
+        raise IACInstanceWarning(
+            IACErrorCode.NO_SUCH_INSTANCE,
+            f"Instance '{instance_name}' is not running",
+        )
+
+
+def _validate_not_multiple(instances: [Instance], instance_name: str):
+    if len(instances) > 1:
+        raise IACInstanceError(
+            IACErrorCode.INSTANCE_NAME_COLLISION,
+            f"More than one instance {instance_name} exists",
+        )
 
 
 def create_instance(
@@ -41,8 +82,8 @@ def create_instance(
     key_name: str,
     security_group: str,
 ) -> Instance:
-    res = describe_instances(ec2, instance_name)
-    if len(res["Reservations"]) and len(res["Reservations"][0]["Instances"]) > 0:
+    instances = describe_instances(ec2, instance_name)
+    if len(instances) != 0:
         raise IACInstanceWarning(
             IACErrorCode.DUPLICATE_INSTANCE,
             f"Instance '{instance_name}' already exists",
@@ -66,62 +107,34 @@ def create_instance(
             },
         ],
     )
-    name = None
-    for tag in res["Instances"][0]["Tags"]:
-        if tag["Key"] == "Name":
-            name = tag["Value"]
-
-    return Instance(
-        name=name,
-        id=res["Instances"][0]["InstanceId"],
-        key_name=res["Instances"][0]["KeyName"],
-        tags=res["Instances"][0]["Tags"],
-    )
+    inst = res["Instances"][0]
+    return Instance.from_aws_instance(inst)
 
 
 def terminate_instance(ec2: botocore.client.BaseClient, instance_name: str) -> Instance:
-    res = describe_instances(ec2, instance_name)
-    if len(res["Reservations"]) == 0:
-        raise IACInstanceWarning(
-            IACErrorCode.NO_SUCH_INSTANCE,
-            f"Instance '{instance_name}' is not running",
-        )
-    if len(res["Reservations"][0]["Instances"]) > 1:
-        raise IACInstanceError(
-            IACErrorCode.INSTANCE_NAME_COLLISION,
-            f"More than one instance {instance_name} exists",
-        )
+    instances = describe_instances(ec2, instance_name)
+    _validate_running(instances, instance_name)
+    _validate_not_multiple(instances, instance_name)
+    instance = instances[0]
 
-    instance_id = res["Reservations"][0]["Instances"][0]["InstanceId"]
-    ec2.terminate_instances(InstanceIds=[instance_id])
+    ec2.terminate_instances(InstanceIds=[instance.id])
 
-    res = describe_instances(ec2, instance_name)
-    if len(res["Reservations"]) != 0:
+    instances = describe_instances(ec2, instance.name)
+    if len(instances) != 0:
         raise IACInstanceError(
             IACErrorCode.INSTANCE_TERMINATION_FAIL,
             f"Instance '{instance_name}' was not terminated",
         )
 
-    return Instance(name=instance_name, id=instance_id)
+    return instance
 
 
 def list_instances(ec2: botocore.client.BaseClient) -> [Instance]:
-    res = describe_instances(ec2)
+    return describe_instances(ec2)
 
-    if len(res["Reservations"]) == 0:
-        return []
-    inst_list = []
-    for inst in res["Reservations"][0]["Instances"]:
-        name = None
-        for tag in inst["Tags"]:
-            if tag["Key"] == "Name":
-                name = tag["Value"]
-        inst_list.append(
-            Instance(
-                name=name,
-                id=inst["InstanceId"],
-                key_name=inst["KeyName"],
-                tags=inst["Tags"],
-            )
-        )
-    return inst_list
+
+def fetch_instance(ec2: botocore.client.BaseClient, instance_name: str) -> Instance:
+    instances = describe_instances(ec2, instance_name)
+    _validate_running(instances, instance_name)
+    _validate_not_multiple(instances, instance_name)
+    return instances[0]

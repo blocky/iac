@@ -1,6 +1,7 @@
 import os
 from dataclasses import dataclass
 from pprint import pformat
+from typing import TypeVar
 
 import botocore.client
 import botocore.exceptions
@@ -19,10 +20,20 @@ class IACKeyWarning(IACWarning):
     pass
 
 
+KeySelf = TypeVar("KeySelf", bound="Key")
+
+
 @dataclass(frozen=True)
 class Key:
     name: str
     tags: [iac.aws.Tag] = None
+
+    @staticmethod
+    def from_aws_key_pair(key_pair: dict) -> KeySelf:
+        return Key(
+            name=key_pair["KeyName"],
+            tags=key_pair["Tags"],
+        )
 
 
 def describe_key_pairs(ec2: botocore.client.BaseClient, key_name: str = None) -> dict:
@@ -114,21 +125,9 @@ def delete_key_pair(ec2: botocore.client.BaseClient, key_name: str) -> Key:
 
     delete_key_pair_file(key_name)
 
-    return Key(name=res["KeyPairs"][0]["KeyName"], tags=res["KeyPairs"][0]["Tags"])
+    return Key.from_aws_key_pair(res["KeyPairs"][0])
 
 
 def list_key_pairs(ec2: botocore.client.BaseClient) -> [Key]:
     res = describe_key_pairs(ec2)
-
-    if len(res["KeyPairs"]) == 0:
-        return []
-
-    key_list = []
-    for key in res["KeyPairs"]:
-        key_list.append(
-            Key(
-                name=key["KeyName"],
-                tags=key["Tags"],
-            )
-        )
-    return key_list
+    return [Key.from_aws_key_pair(key_pair) for key_pair in res["KeyPairs"]]
