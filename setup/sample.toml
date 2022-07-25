@@ -1,5 +1,5 @@
 [iac.aws]
-# Name of the credentials file in the "setup" folder
+# Name of the credentials file in the "secrets" folder
 cred_file = "string.csv"
 # Name of the EC2 instance to be managed by IAC - globally unique
 instance_name = "string"

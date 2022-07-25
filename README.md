@@ -47,6 +47,44 @@ For more on testing see [testing](#testing).  When you want to clean up run:
     conda remove -n sequencer --all
     make veryclean
 
+### Configuring iac
+
+*Note you can skip these steps, but, you will not be able to use the `iac`
+commands or successfully pass all of the live tests.
+
+To setup, first, you will need AWS credentials in a CSV. (Creating credentials
+for Amazon is well documented online or ask internally if you need a hand.)
+Here, we will assume the file is called `aws--bob-dev.csv`.  Put the creds file
+in the `secrets` folder
+
+    mv <wherever-file-was> secrets/aws--bob-dev.csv
+
+Copy the sample config over to a config that will be used on your system
+
+    cp setup/sample.toml setup/config.toml
+
+In the config file set the variables. I like to set these values
+with some info that will help me if I am looking in the aws console. For
+example, since this is the sequencer dev server for bob-dev, I would use (note
+that the values do not need to be the same nor do they need to be different.):
+
+    [iac.aws]
+    cred_file = "aws--bob-dev.csv"
+    instance_name = "seq-dev--bob-dev"
+    key_name = "seq-dev--bob-dev"
+    region = "us-east-1"
+    security_group = "mwittie-testing"
+
+A few things to note, the value for `cred_file` needs to be the name of your
+credential file in the `secrets` folder. The value for `region` should be
+`us-east-1`. (Other regions may work, however, this project uses a
+specific instance type that is not available in all regions.) *WARNING* It is
+assumed that the security group is already created and configured properly. The
+value "mwittie-testing" works but card
+[BKY-2779](https://blocky.atlassian.net/browse/BKY-2779) will add functionality
+to set up security groups with code.
+
+
 ### Updating dependencies
 
 *Warning This section is important, please read carefully.*
@@ -129,7 +167,7 @@ a system is overkill.
 The `iac` command provides the infrastructure as code (IAC) to set up and tear down EC2 Nitro infrastructure.
 To familiarize yourself with the command run
 
-    python -m iac -h
+    python -m iac --help
 
 The workflow to create an EC2 instance described in the `setup/config.toml` file is
 
