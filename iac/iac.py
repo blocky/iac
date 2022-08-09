@@ -6,7 +6,7 @@ import toml
 from environs import Env
 
 import iac
-from utils import utils
+from iac import utils
 
 
 @click.group()

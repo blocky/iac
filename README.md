@@ -1,13 +1,12 @@
-# Sequencer
+# IAC
 
-BLOCKY Sequencer implements a trusted sequencer service as describe in
-the ZipperChain white paper.
+A tool for setting up nitro on AWS
 
 ## Setting up for development
 
 Following [this
-guide](https://ealizadeh.com/blog/guide-to-python-env-pkg-dependency-using-conda-poetry)
-the Sequencer uses Conda for environment management, pip as the package
+guide](https://ealizadeh.com/blog/guide-to-python-env-pkg-dependency-using-conda-poetry),
+this project uses Conda for environment management, pip as the package
 installer, and Poetry as the dependency manager.
 
 Install [Miniconda3](https://docs.conda.io/en/latest/miniconda.html#linux-installers).
@@ -19,38 +18,27 @@ Install [Mamba](https://github.com/mamba-org/mamba) to speed up environment buil
 
     conda install mamba -n base -c conda-forge
 
-From the base environment,
-create and activate (update) a Python environment specified in `environment.yaml`
+From the base environment, create and activate (update) a Python environment
+specified in `environment.yaml`
 
-    mamba env update -n sequencer -f environment.yaml
-    conda activate sequencer
+    mamba env update -n bky-iac -f environment.yaml
+    conda activate bky-iac
 
 Install all the python dependencies
 
     poetry install
 
-Setup testing for a local development server
-
-    make config
-
-Note that this will generate some files, but those files should NOT be added to
-git (they are already in the .gitignore). Check out the config for some helpful
-development tools.
-
 Make sure that everything is set up properly for development by running:
 
     make test
 
-For more on testing see [testing](#testing).  When you want to clean up run:
+When you want to clean up run:
 
     conda deactivate
     conda remove -n sequencer --all
     make veryclean
 
 ### Configuring iac
-
-*Note you can skip these steps, but, you will not be able to use the `iac`
-commands or successfully pass all of the live tests.
 
 To setup, first, you will need AWS credentials in a CSV. (Creating credentials
 for Amazon is well documented online or ask internally if you need a hand.)
@@ -164,8 +152,13 @@ a system is overkill.
 
 ## Setting up EC2 Nitro infrastructure
 
-The `iac` command provides the infrastructure as code (IAC) to set up and tear down EC2 Nitro infrastructure.
-To familiarize yourself with the command run
+**Warning** This section is currently under development, while it does work,
+these commands work when running from the project root ONLY (but NOT if one
+wishes to use the iac command).  This should be fixed along with
+[BKY-2856](https://blocky.atlassian.net/browse/BKY-2856).
+
+The `iac` command provides the infrastructure as code (IAC) to set up and tear
+down EC2 Nitro infrastructure. To familiarize yourself with the command run
 
     python -m iac --help
 
@@ -184,25 +177,24 @@ and to tear down the infrastructure
     python -m iac key delete
     python -m iac instance terminate
 
+## Install notes
 
-## Running
+**Warning** This section is currently under development and will continue to be
+developed as we clean up the IAC project.
 
-To run the Sequencer gateway
+To build and install you can do the following:
 
-    make run
+    conda create --name bky-iac-test-install
+    conda activate bky-iac-test-install
+    conda install python
+    pip install poetry
+    poetry build
+    pip install .
+    xyz
 
-You can access the gateway at http://127.0.0.1:5000/
+Note that you do not need to actually do this in a conda environment, however,
+it makes life easier as we setup packaging.
 
-## Testing <a name="testing"></a>
-
-To run Sequencer unit tests
-
-    make test
-
-You can also execute live Sequencer tests
-
-    make test-live
-
-To check the quality of the code
-
-    make lint
+Other note currently, I am calling the installed program `xyz` while I am
+getting things setup.  It will be returned to a more normal name (like `iac`
+once setup is complete)

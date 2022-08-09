@@ -2,7 +2,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 run:
-	@FLASK_ENV=development FLASK_APP=gateway/gateway flask run
+	@python -m iac
 
 test-unit:
 	@py.test tests/unit
@@ -11,9 +11,6 @@ test-live:
 	@py.test tests/live
 
 test: test-unit
-
-config:
-	@./sh/make_config.sh
 
 format:
 	@echo "\n${BLUE}Running Black against source and test files...${NC}\n"
@@ -28,6 +25,8 @@ lint:
 	@python -m flake8p
 	@echo "\n${BLUE}Running Bandit against source files...${NC}\n"
 	@bandit -r . -c "pyproject.toml"
+	@echo "\n${BLUE}Running poetry check against pyproject.toml...${NC}\n"
+	@poetry check
 
 clean:
 	@find -type f -name coverage.xml -delete

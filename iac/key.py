@@ -7,7 +7,7 @@ import botocore.client
 import botocore.exceptions
 
 import iac.aws
-import utils.utils as utl
+import iac.utils as utl
 from iac.aws import DEPLOYMENT_TAG, SEQUENCER_TAG
 from iac.exception import IACWarning, IACError, IACErrorCode
 

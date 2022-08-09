@@ -39,7 +39,6 @@ definitions:
           - conda
         script:
           - conda activate sequencer
-          - make config
           - make test
     - step: &lint
         name: Lint

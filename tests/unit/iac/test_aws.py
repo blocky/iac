@@ -5,7 +5,7 @@ from pytest import raises
 
 from iac.aws import Credentials
 from tests.unit.iac.context import iac
-from utils.utils import secrets_path
+from iac.utils import secrets_path
 
 
 def test_get_credentials__happy_path():
