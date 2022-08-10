@@ -1,11 +1,7 @@
-from os.path import abspath, join, dirname
-
-ROOT_PATH = dirname(abspath(join(__file__, "..")))
+import os
+from os.path import abspath, join
 
 
 def config_path():
-    return abspath(join(ROOT_PATH, "setup"))
-
-
-def secrets_path():
-    return abspath(join(ROOT_PATH, "secrets"))
+    cwd = os.getcwd()
+    return abspath(join(cwd, "setup"))

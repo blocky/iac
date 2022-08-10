@@ -7,7 +7,6 @@ import botocore.client
 import botocore.exceptions
 
 import iac.aws
-import iac.utils as utl
 from iac.aws import DEPLOYMENT_TAG, SEQUENCER_TAG
 from iac.exception import IACWarning, IACError, IACErrorCode
 
@@ -36,6 +35,25 @@ class Key:
         )
 
 
+@dataclass(frozen=True)
+class KeyFileManager:
+    folder: str
+
+    def _file_name(self, key_name: str) -> str:
+        return os.path.join(self.folder, key_name + ".pem")
+
+    def create(self, key_name: str, key_material: str) -> str:
+        key_fn = self._file_name(key_name)
+        with open(key_fn, mode="x", encoding="utf-8") as file:
+            file.write(key_material)
+        return key_fn
+
+    def delete(self, key_name: str) -> str:
+        key_fn = self._file_name(key_name)
+        os.remove(key_fn)
+        return key_fn
+
+
 def describe_key_pairs(ec2: botocore.client.BaseClient, key_name: str = None) -> dict:
     filters = [
         {"Name": "tag:" + DEPLOYMENT_TAG, "Values": [SEQUENCER_TAG]},
@@ -52,31 +70,11 @@ def describe_key_pairs(ec2: botocore.client.BaseClient, key_name: str = None) ->
         raise exc
 
 
-def key_file_name(key_name: str) -> str:
-    return os.path.join(utl.secrets_path(), key_name + ".pem")
-
-
-def create_key_pair_file(key_name: str, key_material: str) -> str:
-    key_fn = key_file_name(key_name)
-    if os.path.exists(key_fn):
-        raise IACKeyError(IACErrorCode.KEY_FILE_EXISTS, f"Key file {key_fn} already exists")
-    with open(key_fn, mode="w", encoding="utf-8") as file:
-        file.write(key_material)
-    return key_fn
-
-
-def delete_key_pair_file(key_name: str) -> str:
-    key_fn = key_file_name(key_name)
-    try:
-        os.remove(key_fn)
-    except FileNotFoundError as exc:
-        raise IACKeyError(
-            IACErrorCode.NO_SUCH_KEY_FILE, f"Key file {key_fn} does not exist"
-        ) from exc
-    return key_fn
-
-
-def create_key_pair(ec2: botocore.client.BaseClient, key_name: str) -> Key:
+def create_key_pair(
+    ec2: botocore.client.BaseClient,
+    kfm: KeyFileManager,
+    key_name: str,
+) -> Key:
     try:
         res = ec2.create_key_pair(
             KeyName=key_name,
@@ -96,12 +94,16 @@ def create_key_pair(ec2: botocore.client.BaseClient, key_name: str) -> Key:
             raise IACKeyWarning(IACErrorCode.DUPLICATE_KEY, pformat(exc.response)) from exc
         raise exc
 
-    create_key_pair_file(key_name, res["KeyMaterial"])
+    kfm.create(key_name, res["KeyMaterial"])
 
     return Key(name=res["KeyName"])
 
 
-def delete_key_pair(ec2: botocore.client.BaseClient, key_name: str) -> Key:
+def delete_key_pair(
+    ec2: botocore.client.BaseClient,
+    kfm: KeyFileManager,
+    key_name: str,
+) -> Key:
     res = describe_key_pairs(ec2, key_name)
 
     if len(res["KeyPairs"]) != 1:
@@ -123,7 +125,7 @@ def delete_key_pair(ec2: botocore.client.BaseClient, key_name: str) -> Key:
         if exc.error_code != IACErrorCode.NO_SUCH_KEY:
             raise exc
 
-    delete_key_pair_file(key_name)
+    kfm.delete(key_name)
 
     return Key.from_aws_key_pair(res["KeyPairs"][0])
 

@@ -1,16 +1,12 @@
-from os.path import join
-
 import pytest
 from pytest import raises
 
 from iac.aws import Credentials
 from tests.unit.iac.context import iac
-from iac.utils import secrets_path
 
 
-def test_get_credentials__happy_path():
-    file_name = join(secrets_path(), "credentials_for_testing.csv")
-    creds = iac.aws.get_credentials(file_name)
+def test_get_credentials__happy_path(credential_file_name):
+    creds = iac.aws.get_credentials(credential_file_name)
     assert creds.access_key == "test-access-key"
     assert creds.secret_key == "test-secret-key"
 

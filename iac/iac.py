@@ -22,10 +22,8 @@ def iac_cmd(ctx, config_file, access_key, secret_key, region):
     if config_file is None:
         config_file = join(utils.config_path(), "config.toml")
     conf = toml.load(config_file)
+
     ctx.obj["aws"] = conf["iac"]["aws"]
-
-    creds = iac.get_credentials(join(utils.secrets_path(), ctx.obj["aws"]["cred_file"]))
-
     if access_key is not None:
         ctx.obj["aws"]["access_key"] = access_key
     if secret_key is not None:
@@ -33,6 +31,7 @@ def iac_cmd(ctx, config_file, access_key, secret_key, region):
     if region is not None:
         ctx.obj["aws"]["region"] = region
 
+    creds = iac.get_credentials(ctx.obj["aws"]["cred_file"])
     ctx.obj["ec2"] = iac.make_ec2_client(creds, ctx.obj["aws"]["region"])
 
 
@@ -48,14 +47,16 @@ def key_cmd(ctx, key_name):
 @click.command(name="create")
 @click.pass_context
 def key_create_cmd(ctx):
-    key = iac.create_key_pair(ctx.obj["ec2"], ctx.obj["aws"]["key_name"])
+    kfm = iac.KeyFileManager(ctx.obj["aws"]["secrets_folder"])
+    key = iac.create_key_pair(ctx.obj["ec2"], kfm, ctx.obj["aws"]["key_name"])
     print(f"Created key {key.name}")
 
 
 @click.command(name="delete")
 @click.pass_context
 def key_delete_cmd(ctx):
-    key = iac.delete_key_pair(ctx.obj["ec2"], ctx.obj["aws"]["key_name"])
+    kfm = iac.KeyFileManager(ctx.obj["aws"]["secrets_folder"])
+    key = iac.delete_key_pair(ctx.obj["ec2"], kfm, ctx.obj["aws"]["key_name"])
     print(f"Deleted key {key.name}")
 
 

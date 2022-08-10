@@ -16,4 +16,5 @@ from .key import (
     IACKeyWarning,
     IACKeyError,
     Key,
+    KeyFileManager,
 )
