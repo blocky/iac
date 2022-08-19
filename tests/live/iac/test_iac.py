@@ -2,8 +2,6 @@ import logging
 import os
 import subprocess
 
-from utils.utils import ROOT_PATH
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -25,7 +23,6 @@ def run(cmd: str, env: dict = None, prepend: str = "") -> str:
         text=True,
         check=True,
         env=env,
-        cwd=ROOT_PATH,
     )
     assert proc.returncode == 0
     assert proc.stderr == ""

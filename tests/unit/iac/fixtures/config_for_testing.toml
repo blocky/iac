@@ -1,0 +1,10 @@
+[iac.aws]
+cred_file = "my-cred-file.csv"
+secrets_folder = "my-secrets-folder"
+instance_name = "my-instance"
+key_name = "my-key"
+region = "my-region"
+security_group = "my-security-group"
+
+
+

@@ -1,9 +1,0 @@
-[iac.aws]
-cred_file = "credentials_for_testing.csv"
-instance_name = "test-instance"
-key_name = "test-key"
-region = "test-region"
-security_group = "test-security-group"
-
-
-

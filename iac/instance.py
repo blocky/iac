@@ -39,6 +39,10 @@ class Instance:
             public_dns_name=inst["PublicDnsName"],
         )
 
+    @staticmethod
+    def to_dict(instance: InstanceSelf) -> dict:
+        return instance.__dict__
+
 
 def describe_instances(
     ec2: botocore.client.BaseClient,

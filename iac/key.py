@@ -34,6 +34,10 @@ class Key:
             tags=key_pair["Tags"],
         )
 
+    @staticmethod
+    def to_dict(instance: KeySelf) -> dict:
+        return instance.__dict__
+
 
 @dataclass(frozen=True)
 class KeyFileManager:

@@ -24,8 +24,8 @@ definitions:
           - conda
         script:
           - conda install -c conda-forge mamba
-          - mamba env update -n sequencer -f environment.yaml
-          - conda activate sequencer
+          - mamba env update -n bky-iac -f environment.yaml
+          - conda activate bky-iac
           - poetry install
         condition:
           changesets:
@@ -38,14 +38,14 @@ definitions:
         caches:
           - conda
         script:
-          - conda activate sequencer
+          - conda activate bky-iac
           - make test
     - step: &lint
         name: Lint
         caches:
           - conda
         script:
-          - conda activate sequencer
+          - conda activate bky-iac
           - make lint
 
 pipelines:

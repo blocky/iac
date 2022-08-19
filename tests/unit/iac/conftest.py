@@ -1,14 +1,14 @@
 import datetime
 from dateutil.tz import tzutc
 import os.path
+import pathlib
 
 import pytest
 import botocore.exceptions
 
 import iac
 
-
-IAC_UNIT_TEST_FIXTURES_FILE_PATH = "./tests/unit/iac/fixtures"
+IAC_UNIT_TEST_FIXTURES_FILE_PATH = pathlib.Path(__file__).parent.joinpath("fixtures").resolve()
 
 
 class AWSCannedResponses:
@@ -773,4 +773,10 @@ def aws_parrot():
 @pytest.fixture
 def credential_file_name():
     file_name = "credentials_for_testing.csv"
+    return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
+
+
+@pytest.fixture
+def config_file_name():
+    file_name = "config_for_testing.toml"
     return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)

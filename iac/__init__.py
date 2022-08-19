@@ -1,3 +1,4 @@
+from .config import Config
 from .aws import get_credentials, make_ec2_client, DEPLOYMENT_TAG, SEQUENCER_TAG
 from .exception import IACErrorCode, IACWarning, IACError, IACException
 from .instance import (

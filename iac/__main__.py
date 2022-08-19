@@ -3,7 +3,7 @@ from iac import iac
 
 def main():
     # pylint: disable = no-value-for-parameter
-    iac.iac_cmd(obj={}, auto_envvar_prefix="SEQUENCER_IAC")
+    iac.iac_cmd(**iac.IAC_CMD_KWARGS)
 
 
 if __name__ == "__main__":
