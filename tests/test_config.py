@@ -1,4 +1,4 @@
-from .context import iac
+import iac
 
 
 def test_config__from_kwargs():

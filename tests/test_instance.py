@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 from pytest import raises, mark
 
-from .context import iac
+import iac
 
 
 class ExpectedUncaughtInstanceException(Exception):
@@ -94,7 +94,7 @@ def test_describe_instances__happy_path_no_instances(aws_parrot):
     ec2.describe_instances.return_value = aws_parrot.describe_instances__no_instances
 
     got = iac.instance.describe_instances(ec2)
-    assert [] == got
+    assert not got
     assert_ec2_describe_instances_called_with_basic_filter(ec2)
 
 

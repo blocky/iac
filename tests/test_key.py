@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 from pytest import raises, mark
 
-from .context import iac
+import iac
 
 
 class ExpectedUncaughtKeyException(Exception):

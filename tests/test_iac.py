@@ -4,7 +4,7 @@ from unittest.mock import patch, Mock, ANY
 from pytest import mark
 from click.testing import CliRunner
 
-from .context import iac
+import iac
 from iac import iac as app
 
 

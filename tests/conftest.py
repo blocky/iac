@@ -1,10 +1,10 @@
 import datetime
-from dateutil.tz import tzutc
 import os.path
 import pathlib
 
 import pytest
 import botocore.exceptions
+from dateutil.tz import tzutc
 
 import iac
 
@@ -213,6 +213,7 @@ class AWSCannedResponses:
 
     @property
     def describe_instances__many_instances(self):
+        # pylint: disable=line-too-long
         return {
             "Reservations": [
                 {
@@ -294,7 +295,7 @@ class AWSCannedResponses:
                                         {
                                             "Association": {
                                                 "IpOwnerId": "amazon",
-                                                "PublicDnsName": "ec2-3-235-225-44.compute-1.amazonaws.com",  # noqa E501
+                                                "PublicDnsName": "ec2-3-235-225-44.compute-1.amazonaws.com",  # noqa: E501
                                                 "PublicIp": "3.235.225.44",
                                             },
                                             "Primary": True,

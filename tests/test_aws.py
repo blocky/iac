@@ -1,8 +1,8 @@
 import pytest
 from pytest import raises
 
+import iac
 from iac.aws import Credentials
-from tests.unit.iac.context import iac
 
 
 def test_get_credentials__happy_path(credential_file_name):

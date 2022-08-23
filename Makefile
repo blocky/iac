@@ -5,7 +5,7 @@ run:
 	@python -m iac
 
 test-unit:
-	@py.test tests/unit
+	@py.test
 
 test-live:
 	@py.test tests/live
@@ -19,8 +19,10 @@ format:
 lint:
 	@echo "\n${BLUE}Running Black against source and test files...${NC}\n"
 	@black . --check
-	@echo "\n${BLUE}Running Pylint against source and test files...${NC}\n"
-	@pylint **/*.py
+	@echo "\n${BLUE}Running Pylint against source...${NC}\n"
+	@pylint iac/**
+	@echo "\n${BLUE}Running Pylint against tests...${NC}\n"
+	@pylint -d invalid-name tests/**
 	@echo "\n${BLUE}Running Flake8 against source and test files...${NC}\n"
 	@python -m flake8p
 	@echo "\n${BLUE}Running Bandit against source files...${NC}\n"
