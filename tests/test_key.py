@@ -57,6 +57,20 @@ def test_key_file_manager__delete__happy_path(mock_remove):
     mock_remove.assert_called_once_with(want_path)
 
 
+@patch("os.remove")
+def test_key_file_manager__delete__file_does_not_exist(mock_remove):
+    name = "name"
+    folder = "folder"
+
+    want_path = folder + "/" + name + ".pem"
+
+    mock_remove.side_effect = FileNotFoundError()
+
+    got_path = iac.KeyFileManager(folder).delete(name)
+    assert want_path == got_path
+    mock_remove.assert_called_once_with(want_path)
+
+
 def test_create_key_pair__happy_path(aws_parrot):
     kfm = Mock()
     ec2 = Mock()

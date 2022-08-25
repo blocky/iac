@@ -1,26 +1,39 @@
 import json
-import os
-from os.path import abspath, join
+from os.path import join
+from importlib import resources
+from pathlib import Path
 
 import click
 
 import iac
 
 
-DEFAULT_CONFIG_FILE = abspath(join(os.getcwd(), "setup", "config.toml"))
-
+APP_DATA_PATH = resources.path("iac", "data")
+USER_DATA_PATH = join(Path.home(), ".config", "bky", "iac")
 IAC_CMD_KWARGS = {
     "obj": {},
     "auto_envvar_prefix": "BKY_IAC",
 }
 
 
-def console(to_dict, data):
-    try:
-        as_dict = [to_dict(d) for d in data]
-    except TypeError:
-        as_dict = to_dict(data)
-    click.echo(json.dumps(as_dict, indent=2))
+def sample_config_file_name():
+    return join(APP_DATA_PATH, "sample_config.toml")
+
+
+def user_config_file_name():
+    return join(USER_DATA_PATH, "config.toml")
+
+
+def console(data, to_dict=None):
+    out = data
+    if to_dict:
+        try:
+            as_dict = [to_dict(d) for d in data]
+        except TypeError:
+            as_dict = to_dict(data)
+        out = json.dumps(as_dict, indent=2)
+
+    click.echo(out)
 
 
 def fail_on_nodebug(ctx):
@@ -34,27 +47,38 @@ def fail_on_debug(ctx):
 
 
 @click.group()
-@click.option("--config-file", default=DEFAULT_CONFIG_FILE, show_envvar=True, show_default=True)
+@click.option("--config-file", show_envvar=True)
 @click.option("--access-key", show_envvar=True)
 @click.option("--secret-key", show_envvar=True)
+@click.option("--cred-file", show_envvar=True)
 @click.option("--region", show_envvar=True)
 @click.option("--debug/--no-debug", default=False, show_envvar=True, show_default=True)
 @click.pass_context
 # pylint: disable = too-many-arguments
-def iac_cmd(ctx, config_file, access_key, secret_key, region, debug):  # noqa: R0913
-    conf = iac.Config.from_toml(config_file)
+def iac_cmd(
+    ctx,
+    config_file,
+    access_key,
+    secret_key,
+    cred_file,
+    region,
+    debug,
+):  # noqa: R0913
+    conf = iac.Config.from_toml(config_file, user_config_file_name())
 
     conf.debug = debug or conf.debug
     conf.region = region or conf.region
     conf.access_key = access_key or conf.access_key
     conf.secret_key = secret_key or conf.secret_key
-    creds = (
-        iac.aws.Credentials(conf.access_key, conf.secret_key)
-        if conf.access_key and conf.secret_key
-        else iac.get_credentials(conf.cred_file)
-    )
+    conf.cred_file = cred_file or conf.cred_file
 
-    ctx.obj["ec2"] = iac.make_ec2_client(creds, conf.region)
+    creds = None
+    if conf.access_key and conf.secret_key:
+        creds = iac.aws.Credentials(conf.access_key, conf.secret_key)
+    elif conf.cred_file:
+        creds = iac.get_credentials(conf.cred_file)
+
+    ctx.obj["ec2"] = iac.make_ec2_client(creds, conf.region) if creds else None
     ctx.obj["conf"] = conf
 
 
@@ -81,7 +105,7 @@ def key_create_cmd(ctx):
 
     kfm = iac.KeyFileManager(conf.secrets_folder)
     key = iac.create_key_pair(ec2, kfm, conf.key_name)
-    console(iac.Key.to_dict, key)
+    console(key, to_dict=iac.Key.to_dict)
 
 
 @click.command(name="delete")
@@ -94,7 +118,7 @@ def key_delete_cmd(ctx):
 
     kfm = iac.KeyFileManager(conf.secrets_folder)
     key = iac.delete_key_pair(ec2, kfm, conf.key_name)
-    console(iac.Key.to_dict, key)
+    console(key, to_dict=iac.Key.to_dict)
 
 
 @click.command(name="list")
@@ -103,7 +127,7 @@ def key_list_cmd(ctx):
     fail_on_debug(ctx)
 
     keys = iac.list_key_pairs(ctx.obj["ec2"])
-    console(iac.Key.to_dict, keys)
+    console(keys, to_dict=iac.Key.to_dict)
 
 
 @click.command(name="dbgconf")
@@ -111,7 +135,7 @@ def key_list_cmd(ctx):
 def x_dbgconf_cmd(ctx):
     fail_on_nodebug(ctx)
 
-    console(iac.Config.to_dict, ctx.obj["conf"])
+    console(ctx.obj["conf"], to_dict=iac.Config.to_dict)
 
 
 iac_cmd.add_command(key_cmd)
@@ -148,7 +172,7 @@ def instance_create_cmd(ctx):
         conf.key_name,
         conf.security_group,
     )
-    console(iac.Instance.to_dict, instance)
+    console(instance, to_dict=iac.Instance.to_dict)
 
 
 @click.command(name="terminate")
@@ -157,7 +181,7 @@ def instance_terminate_cmd(ctx):
     fail_on_debug(ctx)
 
     instance = iac.terminate_instance(ctx.obj["ec2"], ctx.obj["conf"].instance_name)
-    console(iac.Instance.to_dict, instance)
+    console(instance, to_dict=iac.Instance.to_dict)
 
 
 @click.command(name="list")
@@ -166,7 +190,7 @@ def instance_list_cmd(ctx):
     fail_on_debug(ctx)
 
     instances = iac.list_instances(ctx.obj["ec2"])
-    console(iac.Instance.to_dict, instances)
+    console(instances, to_dict=iac.Instance.to_dict)
 
 
 iac_cmd.add_command(instance_cmd)
@@ -174,3 +198,12 @@ instance_cmd.add_command(instance_create_cmd)
 instance_cmd.add_command(instance_terminate_cmd)
 instance_cmd.add_command(instance_list_cmd)
 instance_cmd.add_command(x_dbgconf_cmd)
+
+
+@click.command(name="config")
+def config_cmd():
+    with open(sample_config_file_name(), encoding="utf8") as handle:
+        console(handle.read())
+
+
+iac_cmd.add_command(config_cmd)

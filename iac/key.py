@@ -35,8 +35,8 @@ class Key:
         )
 
     @staticmethod
-    def to_dict(instance: KeySelf) -> dict:
-        return instance.__dict__
+    def to_dict(key: KeySelf) -> dict:
+        return key.__dict__
 
 
 @dataclass(frozen=True)
@@ -54,7 +54,10 @@ class KeyFileManager:
 
     def delete(self, key_name: str) -> str:
         key_fn = self._file_name(key_name)
-        os.remove(key_fn)
+        try:
+            os.remove(key_fn)
+        except FileNotFoundError:
+            pass
         return key_fn
 
 

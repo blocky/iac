@@ -14,84 +14,92 @@ def warn(msg):
     LOGGER.warning(msg)
 
 
-def run(cmd: str, log=False) -> dict:
-    env = os.environ.copy()
+class IACRunner:
+    def __init__(self, iac_cmd: str = "python -m iac"):
+        self.iac_cmd = iac_cmd
 
-    proc = subprocess.run(
-        cmd,
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        check=True,
-        env=env,
-    )
-    assert proc.returncode == 0
-    assert proc.stderr == ""
+    def __call__(self, args, log=False) -> dict:
+        env = os.environ.copy()
 
-    output = proc.stdout
-    if log:
-        info(output)
+        cmd = self.iac_cmd + " " + args
 
-    return json.loads(output)
+        proc = subprocess.run(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True,
+            env=env,
+        )
+        assert proc.returncode == 0
+        assert proc.stderr == ""
+
+        output = proc.stdout
+        if log:
+            info(output)
+
+        return json.loads(output)
 
 
 def test_iac_workflow__happy_path():
     key_name = "bky-iac-live-test-key"
     instance_name = "bky-iac-live-test-instance"
 
+    iac = IACRunner()
+
     info("Checking initial state of keys")
-    keys = run("python -m iac key list")
+    keys = iac("key list")
     initial_keys = {k["name"] for k in keys}
 
     if key_name in initial_keys:
         warn(f"Key {key_name} was found, attempting to remove")
-        run(f"python -m iac key --key-name={key_name} delete")
+        iac(f"key --key-name={key_name} delete")
 
-        keys = run("python -m iac key list")
+        keys = iac("key list")
         initial_keys = {k["name"] for k in keys}
 
     assert key_name not in initial_keys
 
     info("Create key")
-    run(f"python -m iac key --key-name={key_name} create")
+    iac(f"key --key-name={key_name} create")
 
     info("Checking key creation")
-    keys = run("python -m iac key list")
+    keys = iac("key list")
     assert key_name in {k["name"] for k in keys}
 
     info("Checking initial state of instances")
-    instances = run("python -m iac instance list")
+    instances = iac("instance list")
     initial_instances = {i["name"] for i in instances}
 
     if instance_name in initial_instances:
         warn(f"Instance {instance_name} was found, attempting to terminate")
-        run(f"python -m iac instance --instance-name={instance_name} terminate")
+        iac(f"instance --key-name={key_name} --instance-name={instance_name} terminate")
 
-        instances = run("python -m iac instance list")
+        instances = iac("instance list")
         initial_instances = {i["name"] for i in instances}
 
     assert instance_name not in initial_instances
 
     info("Create instance")
-    run(f"python -m iac instance --instance-name={instance_name} create")
+    iac(f"instance --key-name={key_name} --instance-name={instance_name} create")
 
     info("Checking instance creation")
-    instances = run("python -m iac instance list")
+    instances = iac("instance list")
     assert instance_name in {i["name"] for i in instances}
 
     info("Terminate instance")
-    run(f"python -m iac instance --instance-name={instance_name} terminate")
+    iac(f"instance --key-name={key_name} --instance-name={instance_name} terminate")
 
     info("Checking instance termination")
-    instances = run("python -m iac instance list")
+    instances = iac("instance list")
     assert instance_name not in {i["name"] for i in instances}
 
     info("Delete key")
-    run(f"python -m iac key --key-name={key_name} delete")
+    iac(f"key --key-name={key_name} delete")
 
     info("Checking key deletion")
-    keys = run("python -m iac key list")
+    keys = iac("key list")
     assert key_name not in {k["name"] for k in keys}
 
     info("Success!")

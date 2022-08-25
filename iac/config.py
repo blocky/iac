@@ -1,6 +1,10 @@
+import os
 import dataclasses
+from typing import TypeVar
 
 import toml
+
+ConfigSelf = TypeVar("ConfigSelf", bound="Config")
 
 
 @dataclasses.dataclass
@@ -17,8 +21,19 @@ class Config:
     security_group: str = None
 
     @classmethod
-    def from_toml(cls, config_file):
-        aws = toml.load(config_file).get("iac").get("aws")
+    def from_toml(cls, context: str, user: str) -> ConfigSelf:
+        # pick the file to use for loading a config
+        config_file = None
+        if context is not None:
+            config_file = context
+        elif os.path.exists(user):
+            config_file = user
+
+        # get the "aws" portion of the config
+        aws = {}
+        if config_file:
+            aws = toml.load(config_file).get("iac").get("aws")
+
         return cls.from_kwargs(**aws)
 
     @classmethod
@@ -27,5 +42,5 @@ class Config:
         return cls(**{k: v for k, v in kwargs.items() if k in fields})
 
     @staticmethod
-    def to_dict(instance) -> dict:
-        return instance.__dict__
+    def to_dict(config: ConfigSelf) -> dict:
+        return config.__dict__

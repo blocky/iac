@@ -39,6 +39,26 @@ def run_app(*args, **kwargs):
 
 @patch("iac.get_credentials")
 @patch("iac.make_ec2_client")
+@mark.parametrize("subcommand", ["instance", "key", "config"])
+def test_setup_no_keys_or_creds(
+    mock_make_ec2_client,
+    mock_get_credentials,
+    subcommand,
+    config_file_with_no_creds_name,
+):
+    result = run_app(
+        f"--config-file={config_file_with_no_creds_name}",
+        subcommand,
+        "--help",
+    )
+    assert result.exit_code == 0
+
+    mock_get_credentials.assert_not_called()
+    mock_make_ec2_client.assert_not_called()
+
+
+@patch("iac.get_credentials")
+@patch("iac.make_ec2_client")
 @mark.parametrize("subcommand", ["instance", "key"])
 def test_setup_make_ec2_client_uses_creds_file_when_missing_both_keys(
     mock_make_ec2_client,
@@ -243,6 +263,7 @@ def test_dbgconf__sets_from_config(mock_get_credentials, subcommand, config_file
 def test_dbgconf__instance_sets_from_command_line(config_file_name):
     access_key = "abc"
     secret_key = "123"
+    cred_file_name = "abc123"
     region = "mars"
     instance_name = "bob"
     key_name = "fred"
@@ -253,6 +274,7 @@ def test_dbgconf__instance_sets_from_command_line(config_file_name):
         f"--config-file={config_file_name}",
         f"--access-key={access_key}",
         f"--secret-key={secret_key}",
+        f"--cred-file={cred_file_name}",
         f"--region={region}",
         "instance",
         f"--instance-name={instance_name}",
@@ -267,7 +289,7 @@ def test_dbgconf__instance_sets_from_command_line(config_file_name):
     assert conf["region"] == region
     assert conf["access_key"] == access_key
     assert conf["secret_key"] == secret_key
-    assert conf["cred_file"] == "my-cred-file.csv"
+    assert conf["cred_file"] == cred_file_name
     assert conf["key_name"] == key_name
     assert conf["secrets_folder"] == "my-secrets-folder"
     assert conf["instance_name"] == instance_name
@@ -277,6 +299,7 @@ def test_dbgconf__instance_sets_from_command_line(config_file_name):
 def test_dbgconf__instance_sets_from_environment(config_file_name):
     access_key = "abc"
     secret_key = "123"
+    cred_file_name = "abc123"
     region = "mars"
     instance_name = "bob"
     key_name = "fred"
@@ -289,6 +312,7 @@ def test_dbgconf__instance_sets_from_environment(config_file_name):
         "dbgconf",
         BKY_IAC_ACCESS_KEY=access_key,
         BKY_IAC_SECRET_KEY=secret_key,
+        BKY_IAC_CRED_FILE=cred_file_name,
         BKY_IAC_REGION=region,
         BKY_IAC_INSTANCE_INSTANCE_NAME=instance_name,
         BKY_IAC_INSTANCE_KEY_NAME=key_name,
@@ -302,7 +326,7 @@ def test_dbgconf__instance_sets_from_environment(config_file_name):
     assert conf["region"] == region
     assert conf["access_key"] == access_key
     assert conf["secret_key"] == secret_key
-    assert conf["cred_file"] == "my-cred-file.csv"
+    assert conf["cred_file"] == cred_file_name
     assert conf["key_name"] == key_name
     assert conf["secrets_folder"] == "my-secrets-folder"
     assert conf["instance_name"] == instance_name
@@ -312,6 +336,7 @@ def test_dbgconf__instance_sets_from_environment(config_file_name):
 def test_dbgconf__key_sets_from_command_line(config_file_name):
     access_key = "abc"
     secret_key = "123"
+    cred_file_name = "abc123"
     region = "mars"
     key_name = "fred"
     secrets_folder = "secrets-folder"
@@ -321,6 +346,7 @@ def test_dbgconf__key_sets_from_command_line(config_file_name):
         f"--config-file={config_file_name}",
         f"--access-key={access_key}",
         f"--secret-key={secret_key}",
+        f"--cred-file={cred_file_name}",
         f"--region={region}",
         "key",
         f"--key-name={key_name}",
@@ -334,7 +360,7 @@ def test_dbgconf__key_sets_from_command_line(config_file_name):
     assert conf["region"] == region
     assert conf["access_key"] == access_key
     assert conf["secret_key"] == secret_key
-    assert conf["cred_file"] == "my-cred-file.csv"
+    assert conf["cred_file"] == cred_file_name
     assert conf["key_name"] == key_name
     assert conf["secrets_folder"] == secrets_folder
     assert conf["instance_name"] == "my-instance"
@@ -344,6 +370,7 @@ def test_dbgconf__key_sets_from_command_line(config_file_name):
 def test_dbgconf__key_sets_from_environment(config_file_name):
     access_key = "abc"
     secret_key = "123"
+    cred_file_name = "abc123"
     region = "mars"
     key_name = "fred"
     secrets_folder = "secrets-folder"
@@ -355,6 +382,7 @@ def test_dbgconf__key_sets_from_environment(config_file_name):
         "dbgconf",
         BKY_IAC_ACCESS_KEY=access_key,
         BKY_IAC_SECRET_KEY=secret_key,
+        BKY_IAC_CRED_FILE=cred_file_name,
         BKY_IAC_REGION=region,
         BKY_IAC_KEY_KEY_NAME=key_name,
         BKY_IAC_KEY_SECRETS_FOLDER=secrets_folder,
@@ -367,7 +395,7 @@ def test_dbgconf__key_sets_from_environment(config_file_name):
     assert conf["region"] == region
     assert conf["access_key"] == access_key
     assert conf["secret_key"] == secret_key
-    assert conf["cred_file"] == "my-cred-file.csv"
+    assert conf["cred_file"] == cred_file_name
     assert conf["key_name"] == key_name
     assert conf["secrets_folder"] == secrets_folder
     assert conf["instance_name"] == "my-instance"
