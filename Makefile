@@ -1,5 +1,6 @@
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+pyiac ?= python -m iac
 
 run:
 	@python -m iac
@@ -8,7 +9,7 @@ test-unit:
 	@py.test
 
 test-live:
-	@py.test tests/live
+	@py.test --pyiac="$(pyiac)" tests/live
 
 test: test-unit
 

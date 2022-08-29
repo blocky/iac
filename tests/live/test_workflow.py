@@ -15,13 +15,15 @@ def warn(msg):
 
 
 class IACRunner:
-    def __init__(self, iac_cmd: str = "python -m iac"):
+    def __init__(self, iac_cmd):
         self.iac_cmd = iac_cmd
 
     def __call__(self, args, log=False) -> dict:
         env = os.environ.copy()
 
         cmd = self.iac_cmd + " " + args
+
+        info("  running:" + cmd)
 
         proc = subprocess.run(
             cmd,
@@ -42,11 +44,11 @@ class IACRunner:
         return json.loads(output)
 
 
-def test_iac_workflow__happy_path():
+def test_iac_workflow__happy_path(pyiac):
     key_name = "bky-iac-live-test-key"
     instance_name = "bky-iac-live-test-instance"
 
-    iac = IACRunner()
+    iac = IACRunner(pyiac)
 
     info("Checking initial state of keys")
     keys = iac("key list")

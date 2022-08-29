@@ -38,40 +38,86 @@ When you want to clean up run:
     conda remove -n sequencer --all
     make veryclean
 
+While you can run unit tests without configuring the iac, you will need to
+[Configure iac](#configure-iac) to run `make test-live` (live tests) or use the
+application.
+
 ### Configuring iac
 
-To setup, first, you will need AWS credentials in a CSV. (Creating credentials
-for Amazon is well documented online or ask internally if you need a hand.)
-Here, we will assume the file is called `aws--bob-dev.csv`.  Put the creds file
-in the `secrets` folder
+To set up, first, we will need a place to store secrets.  Let's put that in our
+home directory.
 
-    mv <wherever-file-was> secrets/aws--bob-dev.csv
+    mkdir -p $HOME/secrets/iac
 
-Copy the sample config over to a config that will be used on your system
+Next, you will need AWS credentials in a CSV. (Creating credentials for Amazon
+is well documented online or ask internally if you need a hand.) Here, we will
+assume the file is called `aws--bob-dev.csv`.  Put the creds file in your
+secrets folder.  For example:
 
-    cp setup/sample.toml setup/config.toml
+    mv <wherever-file-was> $HOME/secrets/aws--bob-dev.csv
 
-In the config file set the variables. I like to set these values
+Go to the iac project root and create a config on your system.  (Note that you
+may need to create some folders):
+
+    mkdir -p $HOME/.config/bky/iac
+    python -m iac config > $HOME/.config/bky/iac/config.toml
+
+In the config file, set the variables. I like to set these values
 with some info that will help me if I am looking in the aws console. For
 example, since this is the sequencer dev server for bob-dev, I would use (note
 that the values do not need to be the same nor do they need to be different.):
 
+    # Assuming that $HOME is "/home/bob"
+
     [iac.aws]
-    cred_file = "aws--bob-dev.csv"
+    cred_file = /home/bob/secrets/aws--bob-dev.csv
+    secrets_folder = /home/bob/secrets/iac/
     instance_name = "seq-dev--bob-dev"
     key_name = "seq-dev--bob-dev"
     region = "us-east-1"
     security_group = "mwittie-testing"
 
-A few things to note, the value for `cred_file` needs to be the name of your
-credential file in the `secrets` folder. The value for `region` should be
-`us-east-1`. (Other regions may work, however, this project uses a
-specific instance type that is not available in all regions.) *WARNING* It is
-assumed that the security group is already created and configured properly. The
-value "mwittie-testing" works but card
+A few things to note, the values for `cred_file` and `secrets_foler` must be an
+absolute paths. The value for `region` should be `us-east-1`. (Other regions may
+work, however, this project uses a specific instance type that is not available
+in all regions.) *WARNING* It is assumed that the security group is already
+created and configured properly. The value "mwittie-testing" works but card
 [BKY-2779](https://blocky.atlassian.net/browse/BKY-2779) will add functionality
 to set up security groups with code.
 
+## Using IAC
+
+The `iac` command provides the infrastructure as code (IAC) to set up and tear
+down EC2 Nitro infrastructure.  If you only want to use the tool, you should
+still setup the config and secrets as described in the previous section. You can
+can install `iac` locally by running the following commands from the root
+directory.
+
+    poetry build
+    pip install .
+
+And if all goes well, familiarize yourself with the command
+
+    iac --help
+
+Create an EC2 instance described in the config file
+
+    iac key create
+    iac instance create
+
+See installed infrastructure
+
+    iac key list
+    iac instance list
+
+Tear down the infrastructure
+
+    iac key delete
+    iac instance terminate
+
+And you can even run the project's live tests using the installed version!
+
+    pytest -pyiac="iac" test/live
 
 ### Updating dependencies
 
@@ -150,51 +196,3 @@ receives its own cache.  Currently, we believe that the added complexity of such
 a system is overkill.
 
 
-## Setting up EC2 Nitro infrastructure
-
-**Warning** This section is currently under development, while it does work,
-these commands work when running from the project root ONLY (but NOT if one
-wishes to use the iac command).  This should be fixed along with
-[BKY-2856](https://blocky.atlassian.net/browse/BKY-2856).
-
-The `iac` command provides the infrastructure as code (IAC) to set up and tear
-down EC2 Nitro infrastructure. To familiarize yourself with the command run
-
-    python -m iac --help
-
-The workflow to create an EC2 instance described in the `setup/config.toml` file is
-
-    python -m iac key create
-    python -m iac instance create
-
-to see installed infrastructure
-
-    python -m iac key list
-    python -m iac instance list
-
-and to tear down the infrastructure
-
-    python -m iac key delete
-    python -m iac instance terminate
-
-## Install notes
-
-**Warning** This section is currently under development and will continue to be
-developed as we clean up the IAC project.
-
-To build and install you can do the following:
-
-    conda create --name bky-iac-test-install
-    conda activate bky-iac-test-install
-    conda install python
-    pip install poetry
-    poetry build
-    pip install .
-    xyz
-
-Note that you do not need to actually do this in a conda environment, however,
-it makes life easier as we setup packaging.
-
-Other note currently, I am calling the installed program `xyz` while I am
-getting things setup.  It will be returned to a more normal name (like `iac`
-once setup is complete)

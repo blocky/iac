@@ -20,8 +20,8 @@ definitions:
               - poetry.lock
               - bitbucket-pipelines.yml
 
-    - step: &install
-        name: Install
+    - step: &setup-env
+        name: Setup Environment
         caches:
           - conda
         script:
@@ -50,6 +50,8 @@ definitions:
           - conda
         script:
           - conda activate bky-iac
+          - poetry build
+          - pip install .
           - mkdir $HOME/$LIVE_DATA_DIR
           - >-
             BKY_IAC_ACCESS_KEY=$LIVE_ACCESS_KEY
@@ -57,7 +59,7 @@ definitions:
             BKY_IAC_REGION=$LIVE_REGION
             BKY_IAC_KEY_SECRETS_FOLDER=$HOME/$LIVE_DATA_DIR
             BKY_IAC_INSTANCE_SECURITY_GROUP=$LIVE_SECURITY_GROUP
-            make test-live
+            make pyiac=iac test-live
           - rm -r $HOME/$LIVE_DATA_DIR
 
     - step: &lint
@@ -71,14 +73,14 @@ definitions:
 pipelines:
   default:
     - step: *clear-cache
-    - step: *install
+    - step: *setup-env
     - parallel:
       - step: *test-unit
       - step: *lint
   branches:
     main:
       - step: *clear-cache
-      - step: *install
+      - step: *setup-env
       - parallel:
         - step: *test-unit
         - step: *test-live

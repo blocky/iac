@@ -11,6 +11,15 @@ import iac
 IAC_UNIT_TEST_FIXTURES_FILE_PATH = pathlib.Path(__file__).parent.joinpath("fixtures").resolve()
 
 
+def pytest_addoption(parser):
+    parser.addoption("--pyiac", action="store", default="python -m iac")
+
+
+@pytest.fixture
+def pyiac(pytestconfig):
+    return pytestconfig.getoption("--pyiac")
+
+
 class AWSCannedResponses:
     def __init__(self):
         self.instance_id = "test-instance-id"
