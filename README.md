@@ -38,13 +38,15 @@ When you want to clean up run:
     conda remove -n sequencer --all
     make veryclean
 
-While you can run unit tests without configuring the iac, you will need to
-[Configure iac](#configure-iac) to run `make test-live` (live tests) or use the
+While you can run unit tests without configuring the IAC, you will need to
+[Configure IAC](#configuring-iac) to run `make test-live` (live tests) or use the
 application.
 
-### Configuring iac
+<a name="configuring-iac"></a>
+###  Configuring IAC
 
-To set up, first, we will need a place to store secrets.  Let's put that in our
+
+To set up, first, we will need a place to store IAC secrets.  Let's put that in our
 home directory.
 
     mkdir -p $HOME/secrets/iac
@@ -52,15 +54,20 @@ home directory.
 Next, you will need AWS credentials in a CSV. (Creating credentials for Amazon
 is well documented online or ask internally if you need a hand.) Here, we will
 assume the file is called `aws--bob-dev.csv`.  Put the creds file in your
-secrets folder.  For example:
+secrets folder (but not necessarily the IAC secrets folder).  For example:
 
     mv <wherever-file-was> $HOME/secrets/aws--bob-dev.csv
 
-Go to the iac project root and create a config on your system.  (Note that you
+Go to the IAC project root and create a config on your system.  (Note that you
 may need to create some folders):
 
     mkdir -p $HOME/.config/bky/iac
     python -m iac config > $HOME/.config/bky/iac/config.toml
+
+Be default, IAC will look for the config file in
+`$HOME/.config/bky/iac/config.toml`.
+If you want to place the config in a different directory, you can set that location
+through in the environment variable `BKY_IAC_CONFIG_FILE`.
 
 In the config file, set the variables. I like to set these values
 with some info that will help me if I am looking in the aws console. For
@@ -194,5 +201,4 @@ encode the dependencies are updated!!
 automate the creation of the `bitbucket-pipelines.yml` such that every branch
 receives its own cache.  Currently, we believe that the added complexity of such
 a system is overkill.
-
 

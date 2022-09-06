@@ -1,7 +1,10 @@
 import json
 import logging
 import os
+import random
+import string
 import subprocess
+import tempfile
 
 LOGGER = logging.getLogger(__name__)
 
@@ -18,12 +21,13 @@ class IACRunner:
     def __init__(self, iac_cmd):
         self.iac_cmd = iac_cmd
 
-    def __call__(self, args, log=False) -> dict:
+    def __call__(self, *args, log_cmd=True) -> dict:
         env = os.environ.copy()
 
-        cmd = self.iac_cmd + " " + args
+        cmd = self.iac_cmd + " " + " ".join(args)
 
-        info("  running:" + cmd)
+        if log_cmd:
+            info("  running:" + cmd)
 
         proc = subprocess.run(
             cmd,
@@ -38,13 +42,11 @@ class IACRunner:
         assert proc.stderr == ""
 
         output = proc.stdout
-        if log:
-            info(output)
-
-        return json.loads(output)
+        return json.loads(output) if output else {}
 
 
 def test_iac_workflow__happy_path(pyiac):
+    # pylint: disable=too-many-statements
     key_name = "bky-iac-live-test-key"
     instance_name = "bky-iac-live-test-instance"
 
@@ -89,6 +91,25 @@ def test_iac_workflow__happy_path(pyiac):
     info("Checking instance creation")
     instances = iac("instance list")
     assert instance_name in {i["name"] for i in instances}
+
+    with tempfile.NamedTemporaryFile(prefix="bky-iac-") as tmp:
+        junk = "".join(random.choices(string.ascii_lowercase, k=5))
+        data = "Blocky Rocks!" + junk
+        tmp.write(bytes(data, "utf-8"))
+        tmp.flush()
+
+        info("Copy file")
+        iac(f"deploy --key-name={key_name} --instance-name={instance_name} copy {tmp.name}")
+
+        path_on_remote = tmp.name.replace(tempfile.gettempdir(), ".")
+        info("Run remote command")
+        remote_result = iac(
+            "deploy",
+            f"--key-name={key_name}",
+            f"--instance-name={instance_name}",
+            f"run 'cat {path_on_remote}'",
+        )
+        assert remote_result["stdout"] == data
 
     info("Terminate instance")
     iac(f"instance --key-name={key_name} --instance-name={instance_name} terminate")

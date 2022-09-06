@@ -40,25 +40,40 @@ class Key:
 
 
 @dataclass(frozen=True)
+class KeyFile:
+    path: str
+    username: str
+
+
+@dataclass(frozen=True)
 class KeyFileManager:
     folder: str
+    # Note that the `create_instance` uses an image with id
+    # "ami-08e4e35cccc6189f4".  The OS of of that image is amazon-linux.
+    # In amazon-linux, the default user account is "ec2-user",
+    # which is the reason for the default. If the OS of the image changes,
+    # this simple default username initialization may need to change.
+    username: str = "ec2-user"
 
-    def _file_name(self, key_name: str) -> str:
-        return os.path.join(self.folder, key_name + ".pem")
+    def key_file(self, key_name: str) -> KeyFile:
+        return KeyFile(
+            path=os.path.join(self.folder, key_name + ".pem"),
+            username=self.username,
+        )
 
-    def create(self, key_name: str, key_material: str) -> str:
-        key_fn = self._file_name(key_name)
-        with open(key_fn, mode="x", encoding="utf-8") as file:
-            file.write(key_material)
-        return key_fn
+    def create(self, name: str, material: str) -> KeyFile:
+        key_file = self.key_file(name)
+        with open(key_file.path, mode="x", encoding="utf-8") as file:
+            file.write(material)
+        return key_file
 
-    def delete(self, key_name: str) -> str:
-        key_fn = self._file_name(key_name)
+    def delete(self, name: str) -> str:
+        key_file = self.key_file(name)
         try:
-            os.remove(key_fn)
+            os.remove(key_file.path)
         except FileNotFoundError:
             pass
-        return key_fn
+        return key_file
 
 
 def describe_key_pairs(ec2: botocore.client.BaseClient, key_name: str = None) -> dict:

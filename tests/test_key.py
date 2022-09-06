@@ -33,15 +33,16 @@ def test_key_file_manager__create__happy_path(mock_open):
     folder = "folder"
     material = "material"
 
-    want_path = folder + "/" + name + ".pem"
+    path = folder + "/" + name + ".pem"
+    want = iac.KeyFile(path=path, username="ec2-user")
 
     file = Mock()
     mock_open.return_value.__enter__.return_value = file
     file.write.return_value = None
 
-    got_path = iac.KeyFileManager(folder).create(name, material)
-    assert want_path == got_path
-    mock_open.assert_called_once_with(want_path, mode="x", encoding="utf-8")
+    got = iac.KeyFileManager(folder).create(name, material)
+    assert want == got
+    mock_open.assert_called_once_with(want.path, mode="x", encoding="utf-8")
     file.write.assert_called_once_with(material)
 
 
@@ -50,11 +51,12 @@ def test_key_file_manager__delete__happy_path(mock_remove):
     name = "name"
     folder = "folder"
 
-    want_path = folder + "/" + name + ".pem"
+    path = folder + "/" + name + ".pem"
+    want = iac.KeyFile(path=path, username="ec2-user")
 
-    got_path = iac.KeyFileManager(folder).delete(name)
-    assert want_path == got_path
-    mock_remove.assert_called_once_with(want_path)
+    got = iac.KeyFileManager(folder).delete(name)
+    assert want == got
+    mock_remove.assert_called_once_with(want.path)
 
 
 @patch("os.remove")
@@ -62,13 +64,24 @@ def test_key_file_manager__delete__file_does_not_exist(mock_remove):
     name = "name"
     folder = "folder"
 
-    want_path = folder + "/" + name + ".pem"
+    path = folder + "/" + name + ".pem"
+    want = iac.KeyFile(path=path, username="ec2-user")
 
     mock_remove.side_effect = FileNotFoundError()
 
-    got_path = iac.KeyFileManager(folder).delete(name)
-    assert want_path == got_path
-    mock_remove.assert_called_once_with(want_path)
+    got = iac.KeyFileManager(folder).delete(name)
+    assert want == got
+    mock_remove.assert_called_once_with(want.path)
+
+
+def test_key_file_manager__key_file__happy_path():
+    name = "name"
+    folder = "folder"
+    path = folder + "/" + name + ".pem"
+    want = iac.KeyFile(path=path, username="ec2-user")
+
+    got = iac.KeyFileManager(folder).key_file(name)
+    assert want == got
 
 
 def test_create_key_pair__happy_path(aws_parrot):

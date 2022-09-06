@@ -17,5 +17,10 @@ from .key import (
     IACKeyWarning,
     IACKeyError,
     Key,
+    KeyFile,
     KeyFileManager,
+)
+from .deploy import (
+    RemoteCMDRunner,
+    run_result_to_dict,
 )
