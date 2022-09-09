@@ -53,6 +53,7 @@ definitions:
             BKY_IAC_REGION=$LIVE_REGION
             BKY_IAC_KEY_SECRETS_FOLDER=$HOME/$LIVE_DATA_DIR
             BKY_IAC_INSTANCE_SECURITY_GROUP=$LIVE_SECURITY_GROUP
+            BKY_IAC_DEPLOY_SECRETS_FOLDER=$HOME/$LIVE_DATA_DIR
             make pyiac=iac test-live
           - rm -r $HOME/$LIVE_DATA_DIR
 

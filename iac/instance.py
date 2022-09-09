@@ -121,10 +121,9 @@ def terminate_instance(ec2: botocore.client.BaseClient, instance_name: str) -> I
     _validate_not_multiple(instances, instance_name)
     instance = instances[0]
 
-    ec2.terminate_instances(InstanceIds=[instance.id])
-
-    instances = describe_instances(ec2, instance.name)
-    if len(instances) != 0:
+    res = ec2.terminate_instances(InstanceIds=[instance.id])
+    current_state = res["TerminatingInstances"][0]["CurrentState"]["Name"]
+    if current_state not in {"shutting-down", "terminated"}:
         raise IACInstanceError(
             IACErrorCode.INSTANCE_TERMINATION_FAIL,
             f"Instance '{instance_name}' was not terminated",

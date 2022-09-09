@@ -619,6 +619,32 @@ class AWSCannedResponses:
             },
         }
 
+    def terminate_instances_result(self, state):
+        return {
+            "ResponseMetadata": {
+                "HTTPHeaders": {
+                    "cache-control": "no-cache, no-store",
+                    "content-type": "text/xml;charset=UTF-8",
+                    "date": "Fri, 09 Sep 2022 00:49:30 GMT",
+                    "server": "AmazonEC2",
+                    "strict-transport-security": "max-age=31536000; " "includeSubDomains",
+                    "transfer-encoding": "chunked",
+                    "vary": "accept-encoding",
+                    "x-amzn-requestid": "a7681118-c1ba-4834-82bb-4f4ad5c7fd8f",
+                },
+                "HTTPStatusCode": 200,
+                "RequestId": "a7681118-c1ba-4834-82bb-4f4ad5c7fd8f",
+                "RetryAttempts": 0,
+            },
+            "TerminatingInstances": [
+                {
+                    "CurrentState": {"Code": 32, "Name": state},
+                    "InstanceId": self.instance_id,
+                    "PreviousState": {"Code": 16, "Name": "running"},
+                }
+            ],
+        }
+
     @property
     def describe_key_pairs__no_keys(self):
         return {

@@ -226,17 +226,22 @@ def test_create_instance__run_instances_exception(
 
 
 @patch("iac.instance.describe_instances")
-def test_terminate_instance__happy_path(mock_describe_instances):
+@mark.parametrize("state", ["shutting-down", "terminated"])
+def test_terminate_instance__happy_path(
+    mock_describe_instances,
+    aws_parrot,
+    state,
+):
     ec2 = Mock()
+    ec2.terminate_instances.return_value = aws_parrot.terminate_instances_result(state)
 
     want = iac.Instance(name="a", id="a_id")
-    mock_describe_instances.side_effect = [[want], []]
+    mock_describe_instances.return_value = [want]
 
     got = iac.terminate_instance(ec2, want.name)
     assert want == got
 
-    mock_describe_instances.assert_called_with(ec2, want.name)
-    assert mock_describe_instances.call_count == 2
+    mock_describe_instances.assert_called_once_with(ec2, want.name)
     ec2.terminate_instances.assert_called_once_with(InstanceIds=[want.id])
 
 
@@ -304,35 +309,18 @@ def test_terminate_instance__cloud_terminate_exception(mock_describe_instances):
 
 
 @patch("iac.instance.describe_instances")
-def test_terminate_instance__cloud_terminate_failed(mock_describe_instances):
+def test_terminate_instance__still_running(mock_describe_instances, aws_parrot):
     ec2 = Mock()
+    ec2.terminate_instances.return_value = aws_parrot.terminate_instances_result("running")
 
     instance = iac.Instance(name="a", id="a_id")
-    mock_describe_instances.side_effect = [[instance]] * 2
+    mock_describe_instances.return_value = [instance]
 
     with raises(iac.IACInstanceError) as exc_info:
         iac.terminate_instance(ec2, instance.name)
     assert exc_info.value.error_code == iac.IACErrorCode.INSTANCE_TERMINATION_FAIL
 
-    mock_describe_instances.assert_called_with(ec2, instance.name)
-    assert mock_describe_instances.call_count == 2
-    ec2.terminate_instances.assert_called_once_with(InstanceIds=[instance.id])
-
-
-@patch("iac.instance.describe_instances")
-def test_terminate_instance__describe_instances_second_call_exception(mock_describe_instances):
-    ec2 = Mock()
-
-    want = ExpectedUncaughtInstanceException()
-    instance = iac.Instance(name="a", id="a_id")
-    mock_describe_instances.side_effect = [[instance], want]
-
-    with raises(type(want)) as exc_info:
-        iac.terminate_instance(ec2, instance.name)
-    assert exc_info.value is want
-
-    mock_describe_instances.assert_called_with(ec2, instance.name)
-    assert mock_describe_instances.call_count == 2
+    mock_describe_instances.assert_called_once_with(ec2, instance.name)
     ec2.terminate_instances.assert_called_once_with(InstanceIds=[instance.id])
 
 

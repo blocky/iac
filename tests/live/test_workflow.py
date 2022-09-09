@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import random
 import string
 import subprocess
@@ -17,27 +16,29 @@ def warn(msg):
     LOGGER.warning(msg)
 
 
+def run(cmd, log_cmd=False) -> dict:
+    if log_cmd:
+        info("  running:" + cmd)
+
+    return subprocess.run(
+        cmd,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=True,
+    )
+
+
 class IACRunner:
-    def __init__(self, iac_cmd):
+    def __init__(self, iac_cmd, log_cmd=True):
         self.iac_cmd = iac_cmd
+        self.log_cmd = log_cmd
 
-    def __call__(self, *args, log_cmd=True) -> dict:
-        env = os.environ.copy()
-
+    def __call__(self, *args) -> dict:
         cmd = self.iac_cmd + " " + " ".join(args)
 
-        if log_cmd:
-            info("  running:" + cmd)
-
-        proc = subprocess.run(
-            cmd,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            check=True,
-            env=env,
-        )
+        proc = run(cmd, log_cmd=self.log_cmd)
         assert proc.returncode == 0
         assert proc.stderr == ""
 
