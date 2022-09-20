@@ -209,6 +209,13 @@ def config_cmd():
 iac_cmd.add_command(config_cmd)
 
 
+def remote_runner(ctx):
+    conf = ctx.obj["conf"]
+    key_file = iac.KeyFileManager(conf.secrets_folder).key_file(conf.key_name)
+    instance = iac.fetch_instance(ctx.obj["ec2"], conf.instance_name)
+    return iac.RemoteCMDRunner.from_instance_and_key_file(instance, key_file)
+
+
 @click.group(name="deploy")
 @click.option("--instance-name", show_envvar=True)
 @click.option("--key-name", show_envvar=True)
@@ -223,13 +230,6 @@ def deploy_cmd(ctx, instance_name, key_name, secrets_folder):
 
     ctx.obj["conf"] = conf
 
-    key_file = iac.KeyFileManager(conf.secrets_folder).key_file(conf.key_name)
-    instance = iac.fetch_instance(ctx.obj["ec2"], conf.instance_name)
-    ctx.obj["remote_runner"] = iac.RemoteCMDRunner.from_instance_and_key_file(
-        instance,
-        key_file,
-    )
-
 
 @click.command(name="copy")
 @click.argument("file_name")
@@ -237,7 +237,7 @@ def deploy_cmd(ctx, instance_name, key_name, secrets_folder):
 def deploy_cmd_copy(ctx, file_name):
     fail_on_debug(ctx)
 
-    ctx.obj["remote_runner"].copy(file_name)
+    remote_runner(ctx).copy(file_name)
 
 
 @click.command(name="run")
@@ -246,7 +246,7 @@ def deploy_cmd_copy(ctx, file_name):
 def deploy_cmd_run(ctx, cmd):
     fail_on_debug(ctx)
 
-    out = ctx.obj["remote_runner"].run(cmd)
+    out = remote_runner(ctx).run(cmd)
     console(out, to_dict=iac.run_result_to_dict)
 
 

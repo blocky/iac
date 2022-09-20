@@ -35,7 +35,7 @@ class IACRunner:
         self.iac_cmd = iac_cmd
         self.log_cmd = log_cmd
 
-    def __call__(self, *args) -> dict:
+    def __call__(self, *args, load_output=True) -> dict:
         cmd = self.iac_cmd + " " + " ".join(args)
 
         proc = run(cmd, log_cmd=self.log_cmd)
@@ -43,7 +43,7 @@ class IACRunner:
         assert proc.stderr == ""
 
         output = proc.stdout
-        return json.loads(output) if output else {}
+        return json.loads(output) if output and load_output else {}
 
 
 def test_iac_workflow__happy_path(pyiac):
@@ -52,6 +52,10 @@ def test_iac_workflow__happy_path(pyiac):
     instance_name = "bky-iac-live-test-instance"
 
     iac = IACRunner(pyiac)
+
+    info("Check help commands")
+    iac("deploy copy --help", load_output=False)
+    iac("deploy run --help", load_output=False)
 
     info("Checking initial state of keys")
     keys = iac("key list")
