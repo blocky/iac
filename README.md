@@ -60,6 +60,7 @@ secrets folder (but not necessarily the IAC secrets folder).  For example:
 
 Go to the IAC project root and create a config on your system.  (Note that you
 may need to create some folders):
+THE FOLLOWING TWO LINES OF COMMANDS DO NOT WORK: [BKY-3089](https://blocky.atlassian.net/browse/BKY-3089)
 
     mkdir -p $HOME/.config/bky/iac
     python -m iac config > $HOME/.config/bky/iac/config.toml
@@ -124,7 +125,7 @@ Tear down the infrastructure
 
 And you can even run the project's live tests using the installed version!
 
-    pytest -pyiac="iac" test/live
+    pytest --pyiac="iac" tests/live
 
 ### Updating dependencies
 
