@@ -149,13 +149,18 @@ key_cmd.add_command(x_dbgconf_cmd)
 @click.option("--instance-name", show_envvar=True)
 @click.option("--key-name", show_envvar=True)
 @click.option("--security-group", show_envvar=True)
+@click.option("--nitro/--no-nitro", default=None, show_envvar=True)
 @click.pass_context
-def instance_cmd(ctx, instance_name, key_name, security_group):
+def instance_cmd(ctx, instance_name, key_name, security_group, nitro):
     conf = ctx.obj["conf"]
 
     conf.instance_name = instance_name or conf.instance_name
     conf.key_name = key_name or conf.key_name
     conf.security_group = security_group or conf.security_group
+
+    IK = iac.InstanceKind
+    if nitro is not None:
+        conf.instance_kind = IK.NITRO.value if nitro else IK.STANDARD.value
 
     ctx.obj["conf"] = conf
 
@@ -168,6 +173,7 @@ def instance_create_cmd(ctx):
     conf = ctx.obj["conf"]
     instance = iac.create_instance(
         ctx.obj["ec2"],
+        iac.InstanceKind.from_str(conf.instance_kind),
         conf.instance_name,
         conf.key_name,
         conf.security_group,

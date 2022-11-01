@@ -18,6 +18,7 @@ class Config:
     key_name: str = None
     secrets_folder: str = None
     instance_name: str = None
+    instance_kind: str = None
     security_group: str = None
 
     @classmethod

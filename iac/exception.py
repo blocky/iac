@@ -12,6 +12,7 @@ class IACErrorCode(Enum):
     INSTANCE_NAME_COLLISION = auto()
     INSTANCE_TERMINATION_FAIL = auto()
     NO_SUCH_INSTANCE = auto()
+    NO_SUCH_INSTANCE_KIND = auto()
 
 
 class IACException(Exception):

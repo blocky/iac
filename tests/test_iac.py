@@ -285,6 +285,7 @@ def test_dbgconf__sets_from_config(
     assert conf["secrets_folder"] == "my-secrets-folder"
     assert conf["instance_name"] == "my-instance"
     assert conf["security_group"] == "my-security-group"
+    assert conf["instance_kind"] == "nitro"
 
     mock_get_credentials.assert_called_once_with(cred_file_name)
 
@@ -309,6 +310,7 @@ def test_dbgconf__instance_sets_from_command_line(config_file_name):
         f"--instance-name={instance_name}",
         f"--key-name={key_name}",
         f"--security-group={security_group}",
+        "--no-nitro",
         "dbgconf",
     )
     assert result.exit_code == 0
@@ -323,6 +325,7 @@ def test_dbgconf__instance_sets_from_command_line(config_file_name):
     assert conf["secrets_folder"] == "my-secrets-folder"
     assert conf["instance_name"] == instance_name
     assert conf["security_group"] == security_group
+    assert conf["instance_kind"] == "standard"
 
 
 def test_dbgconf__instance_sets_from_environment(config_file_name):
@@ -333,6 +336,7 @@ def test_dbgconf__instance_sets_from_environment(config_file_name):
     instance_name = "bob"
     key_name = "fred"
     security_group = "yum"
+    instance_kind = "nitro"
 
     result = run_app(
         "--debug",
@@ -346,6 +350,7 @@ def test_dbgconf__instance_sets_from_environment(config_file_name):
         BKY_IAC_INSTANCE_INSTANCE_NAME=instance_name,
         BKY_IAC_INSTANCE_KEY_NAME=key_name,
         BKY_IAC_INSTANCE_SECURITY_GROUP=security_group,
+        BKY_IAC_INSTANCE_INSTANCE_KIND=instance_kind,
     )
 
     assert result.exit_code == 0
@@ -360,6 +365,7 @@ def test_dbgconf__instance_sets_from_environment(config_file_name):
     assert conf["secrets_folder"] == "my-secrets-folder"
     assert conf["instance_name"] == instance_name
     assert conf["security_group"] == security_group
+    assert conf["instance_kind"] == instance_kind
 
 
 def test_dbgconf__key_sets_from_command_line(config_file_name):

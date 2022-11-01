@@ -47,3 +47,15 @@ region = "string"
 #
 # You MUST change or specify via env var or command line arg
 security_group = "string"
+
+# Name of the instance kind for the EC2 instance
+#
+# Valid values are:
+# - 'standard' - creates a very small instance that does not support nitro.
+#       The standard profile is intended for development.
+# - 'nitro' - creates a very large instance with nitro.
+#       The nitro profile is intended for production or developing on a system
+#       that has a real enclave.
+# You MUST change or specify via env var or command line arg
+instance_kind = "string"
+

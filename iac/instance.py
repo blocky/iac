@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import TypeVar
+from enum import Enum
 
 import botocore.client
 
@@ -14,6 +15,27 @@ class IACInstanceError(IACError):
 
 class IACInstanceWarning(IACWarning):
     pass
+
+
+InstanceKindSelf = TypeVar("InstanceKindSelf", bound="InstanceKind")
+
+
+class InstanceKind(Enum):
+    STANDARD = "standard"
+    NITRO = "nitro"
+
+    @staticmethod
+    def from_str(kind: str) -> InstanceKindSelf:
+        match kind.lower():
+            case "standard":
+                return InstanceKind.STANDARD
+            case "nitro":
+                return InstanceKind.NITRO
+            case _:
+                raise IACInstanceError(
+                    IACErrorCode.NO_SUCH_INSTANCE_KIND,
+                    f"Cannot create instance kind from '{kind}'",
+                )
 
 
 InstanceSelf = TypeVar("InstanceSelf", bound="Instance")
@@ -80,28 +102,19 @@ def _validate_not_multiple(instances: [Instance], instance_name: str):
         )
 
 
-def create_instance(
-    ec2: botocore.client.BaseClient,
+def _ec2_config(
+    kind: InstanceKind,
     instance_name: str,
     key_name: str,
     security_group: str,
-) -> Instance:
-    instances = describe_instances(ec2, instance_name)
-    if len(instances) != 0:
-        raise IACInstanceWarning(
-            IACErrorCode.DUPLICATE_INSTANCE,
-            f"Instance '{instance_name}' already exists",
-        )
-
-    res = ec2.run_instances(
-        ImageId="ami-08e4e35cccc6189f4",
-        MaxCount=1,
-        MinCount=1,
-        InstanceType="c5a.xlarge",
-        KeyName=key_name,
-        SecurityGroupIds=[security_group],
-        EnclaveOptions={"Enabled": True},
-        TagSpecifications=[
+) -> dict:
+    definition = {
+        "ImageId": "ami-08e4e35cccc6189f4",
+        "MaxCount": 1,
+        "MinCount": 1,
+        "KeyName": key_name,
+        "SecurityGroupIds": [security_group],
+        "TagSpecifications": [
             {
                 "ResourceType": "instance",
                 "Tags": [
@@ -110,7 +123,40 @@ def create_instance(
                 ],
             },
         ],
-    )
+    }
+
+    instance_type_key = "InstanceType"
+    match kind:
+        case InstanceKind.STANDARD:
+            definition[instance_type_key] = "t2.micro"
+        case InstanceKind.NITRO:
+            definition[instance_type_key] = "c5a.xlarge"
+            definition["EnclaveOptions"] = {"Enabled": True}
+        case _:
+            raise IACInstanceError(
+                IACErrorCode.NO_SUCH_INSTANCE_KIND,
+                f"Unknown instance kind '{kind}'",
+            )
+    return definition
+
+
+def create_instance(
+    ec2: botocore.client.BaseClient,
+    kind: InstanceKind,
+    instance_name: str,
+    key_name: str,
+    security_group: str,
+) -> Instance:
+
+    instances = describe_instances(ec2, instance_name)
+    if len(instances) != 0:
+        raise IACInstanceWarning(
+            IACErrorCode.DUPLICATE_INSTANCE,
+            f"Instance '{instance_name}' already exists",
+        )
+
+    config = _ec2_config(kind, instance_name, key_name, security_group)
+    res = ec2.run_instances(**config)
     inst = res["Instances"][0]
     return Instance.from_aws_instance(inst)
 
@@ -126,7 +172,7 @@ def terminate_instance(ec2: botocore.client.BaseClient, instance_name: str) -> I
     if current_state not in {"shutting-down", "terminated"}:
         raise IACInstanceError(
             IACErrorCode.INSTANCE_TERMINATION_FAIL,
-            f"Instance '{instance_name}' was not terminated",
+            f"Instance '{instance_name}' was not terminated state is '{current_state}'",
         )
 
     return instance

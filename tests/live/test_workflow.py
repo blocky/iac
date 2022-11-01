@@ -91,7 +91,7 @@ def test_iac_workflow__happy_path(pyiac):
     assert instance_name not in initial_instances
 
     info("Create instance")
-    iac(f"instance --key-name={key_name} --instance-name={instance_name} create")
+    iac(f"instance --key-name={key_name} --instance-name={instance_name} --no-nitro create")
 
     info("Checking instance creation")
     instances = iac("instance list")

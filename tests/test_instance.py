@@ -9,6 +9,15 @@ class ExpectedUncaughtInstanceException(Exception):
     pass
 
 
+def test_instace_kind__from_str():
+    assert iac.InstanceKind.from_str("standard") == iac.InstanceKind.STANDARD
+    assert iac.InstanceKind.from_str("nitro") == iac.InstanceKind.NITRO
+    with raises(iac.IACInstanceError) as e:
+        iac.InstanceKind.from_str("not-a-kind")
+    assert e.value.error_code == iac.IACErrorCode.NO_SUCH_INSTANCE_KIND
+    assert "Cannot create instance kind from" in str(e.value)
+
+
 @mark.parametrize("field", ["Tags", "InstanceId", "KeyName", "PublicDnsName"])
 def test_intance__from_aws_instance__error_in_structure(field, aws_parrot):
     inst = aws_parrot.describe_instances__one_instance["Reservations"][0]["Instances"][0]
@@ -109,7 +118,7 @@ def test_describe_instances__cloud_exception():
     assert_ec2_describe_instances_called_with_basic_filter(ec2)
 
 
-def assert_ec2_run_instances_called_once(ec2, aws_parrot):
+def assert_nitro_ec2_run_instances_called_once(ec2, aws_parrot):
     ec2.run_instances.assert_called_once_with(
         ImageId="ami-08e4e35cccc6189f4",
         MaxCount=1,
@@ -130,8 +139,28 @@ def assert_ec2_run_instances_called_once(ec2, aws_parrot):
     )
 
 
+def assert_standard_ec2_run_instances_called_once(ec2, aws_parrot):
+    ec2.run_instances.assert_called_once_with(
+        ImageId="ami-08e4e35cccc6189f4",
+        MaxCount=1,
+        MinCount=1,
+        InstanceType="t2.micro",
+        KeyName=aws_parrot.key_name,
+        SecurityGroupIds=[aws_parrot.security_group],
+        TagSpecifications=[
+            {
+                "ResourceType": "instance",
+                "Tags": [
+                    {"Key": iac.DEPLOYMENT_TAG, "Value": iac.SEQUENCER_TAG},
+                    {"Key": "Name", "Value": aws_parrot.instance_name},
+                ],
+            },
+        ],
+    )
+
+
 @patch("iac.instance.describe_instances")
-def test_create_instance__happy_path(mock_describe_instances, aws_parrot):
+def test_create_instance__nitro_happy_path(mock_describe_instances, aws_parrot):
     ec2 = Mock()
     ec2.run_instances.return_value = aws_parrot.run_instances
 
@@ -139,6 +168,7 @@ def test_create_instance__happy_path(mock_describe_instances, aws_parrot):
 
     got = iac.create_instance(
         ec2,
+        iac.InstanceKind.NITRO,
         aws_parrot.instance_name,
         aws_parrot.key_name,
         aws_parrot.security_group,
@@ -153,7 +183,34 @@ def test_create_instance__happy_path(mock_describe_instances, aws_parrot):
     ]
 
     mock_describe_instances.assert_called_once_with(ec2, aws_parrot.instance_name)
-    assert_ec2_run_instances_called_once(ec2, aws_parrot)
+    assert_nitro_ec2_run_instances_called_once(ec2, aws_parrot)
+
+
+@patch("iac.instance.describe_instances")
+def test_create_instance__standard_happy_path(mock_describe_instances, aws_parrot):
+    ec2 = Mock()
+    ec2.run_instances.return_value = aws_parrot.run_instances
+
+    mock_describe_instances.return_value = []
+
+    got = iac.create_instance(
+        ec2,
+        iac.InstanceKind.STANDARD,
+        aws_parrot.instance_name,
+        aws_parrot.key_name,
+        aws_parrot.security_group,
+    )
+    assert got.name == aws_parrot.instance_name
+    assert got.id == aws_parrot.instance_id
+    assert got.key_name == aws_parrot.key_name
+    assert got.public_dns_name == ""
+    assert got.tags == [
+        {"Key": iac.DEPLOYMENT_TAG, "Value": iac.SEQUENCER_TAG},
+        {"Key": "Name", "Value": aws_parrot.instance_name},
+    ]
+
+    mock_describe_instances.assert_called_once_with(ec2, aws_parrot.instance_name)
+    assert_standard_ec2_run_instances_called_once(ec2, aws_parrot)
 
 
 @patch("iac.instance.describe_instances")
@@ -169,6 +226,7 @@ def test_create_instance__describe_instances_error(
     with raises(type(want)) as exc_info:
         iac.create_instance(
             ec2,
+            iac.InstanceKind.NITRO,
             aws_parrot.instance_name,
             aws_parrot.key_name,
             aws_parrot.security_group,
@@ -191,6 +249,7 @@ def test_create_instance__instance_already_exists(
     with raises(iac.IACInstanceWarning) as exc_info:
         iac.create_instance(
             ec2,
+            iac.InstanceKind.NITRO,
             aws_parrot.instance_name,
             aws_parrot.key_name,
             aws_parrot.security_group,
@@ -215,6 +274,7 @@ def test_create_instance__run_instances_exception(
     with raises(type(want)) as exc_info:
         iac.create_instance(
             ec2,
+            iac.InstanceKind.NITRO,
             aws_parrot.instance_name,
             aws_parrot.key_name,
             aws_parrot.security_group,
@@ -222,7 +282,7 @@ def test_create_instance__run_instances_exception(
     assert exc_info.value is want
 
     mock_describe_instances.assert_called_once_with(ec2, aws_parrot.instance_name)
-    assert_ec2_run_instances_called_once(ec2, aws_parrot)
+    assert_nitro_ec2_run_instances_called_once(ec2, aws_parrot)
 
 
 @patch("iac.instance.describe_instances")

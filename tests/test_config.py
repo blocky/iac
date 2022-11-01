@@ -12,6 +12,7 @@ def expected_config_from_fixture():
         key_name="my-key",
         region="my-region",
         security_group="my-security-group",
+        instance_kind="nitro",
     )
 
 
@@ -56,4 +57,5 @@ def test_config__from_kwargs():
     assert config.key_name is None
     assert config.secrets_folder is None
     assert config.instance_name is None
+    assert config.instance_kind is None
     assert config.security_group is None

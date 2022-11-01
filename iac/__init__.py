@@ -9,6 +9,7 @@ from .instance import (
     IACInstanceWarning,
     IACInstanceError,
     Instance,
+    InstanceKind,
 )
 from .key import (
     create_key_pair,
