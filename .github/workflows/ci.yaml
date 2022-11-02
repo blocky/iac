@@ -41,5 +41,4 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Unit test
-        script:
-          - make test-unit
+        run: make test-unit
