@@ -53,18 +53,18 @@ jobs:
 
       - name: Live test
         env:
-          live_access_key: ${{ secrets.LIVE_ACCESS_KEY }}
-          live_secret_key: ${{ secrets.LIVE_SECRET_KEY }}
+          access_key: ${{ secrets.LIVE_ACCESS_KEY }}
+          secret_key: ${{ secrets.LIVE_SECRET_KEY }}
+          region: "us-east-1"
+          data_dir: "$HOME/iac-live-test-data"
+          security_group: "mwittie-testing"
         run: |
-          export region="us-east-1"
-          export live_data_dir="$HOME/iac-live-test-data"
-          export security_group="mwittie-testing"
-          mkdir "$live_data_dir"
-          BKY_IAC_ACCESS_KEY=$live_access_key \
-            BKY_IAC_SECRET_KEY=$live_secret_key \
+          mkdir "$data_dir"
+          BKY_IAC_ACCESS_KEY=$access_key \
+            BKY_IAC_SECRET_KEY=$secret_key \
             BKY_IAC_REGION=$region \
-            BKY_IAC_KEY_SECRETS_FOLDER=$live_data_dir \
+            BKY_IAC_KEY_SECRETS_FOLDER=$data_dir \
             BKY_IAC_INSTANCE_SECURITY_GROUP=$security_group \
-            BKY_IAC_DEPLOY_SECRETS_FOLDER=$live_data_dir \
+            BKY_IAC_DEPLOY_SECRETS_FOLDER=$data_dir \
             make pyiac=iac test-live
-          rm -r "$live_data_dir"
+          rm -r "$data_dir"
