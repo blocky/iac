@@ -31,19 +31,18 @@ jobs:
         run: mamba env update -n bky-iac -f environment.yaml
         if: steps.cache.outputs.cache-hit != 'true'
 
-      - name: Install python dependencies
-        run: |
-          conda activate bky-iac
-          poetry install
-        if: steps.cache.outputs.cache-hit != 'true'
-
       - name: Some stats
         run: |
           echo "🔎 Some stats:"
           conda info
-          conda activate bky-iac
-          conda info
           echo "🍏 This job's status is ${{ job.status }}."
+
+      # - name: Install python dependencies
+      #   run: |
+      #     conda activate bky-iac
+      #     poetry install
+      #   if: steps.cache.outputs.cache-hit != 'true'
+
       #
       # - name: Run tests
       #   shell: bash -l {0}
