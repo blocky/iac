@@ -40,8 +40,29 @@ jobs:
           poetry install
         if: steps.cache.outputs.cache-hit != 'true'
 
+      - name: Lint
+        run: make lint
+
       - name: Unit test
         run: make test-unit
 
-      - name: Lint
-        run: make lint
+      - name: Build and install
+        run: |
+          poetry build
+          pip install .
+
+      - name: Live test
+        run: |
+          echo $HOME
+          export live_data_dir="$HOME/iac-live-test-data"
+          echo "$live_data_dir"
+          mkdir "$live_data_dir"
+          # - >-
+          #   BKY_IAC_ACCESS_KEY=$LIVE_ACCESS_KEY
+          #   BKY_IAC_SECRET_KEY=$LIVE_SECRET_KEY
+          #   BKY_IAC_REGION=$LIVE_REGION
+          #   BKY_IAC_KEY_SECRETS_FOLDER=$HOME/$LIVE_DATA_DIR
+          #   BKY_IAC_INSTANCE_SECURITY_GROUP=$LIVE_SECURITY_GROUP
+          #   BKY_IAC_DEPLOY_SECRETS_FOLDER=$HOME/$LIVE_DATA_DIR
+          #   make pyiac=iac test-live
+          rm -r "$live_data_dir"
