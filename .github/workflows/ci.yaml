@@ -31,7 +31,7 @@ jobs:
         id: cache
 
       - name: Update environment
-        run: mamba env update -n my-env -f environment.yml
+        run: mamba env update -n bky-iac -f environment.yaml
         if: steps.cache.outputs.cache-hit != 'true'
       #
       # - name: Some stats
