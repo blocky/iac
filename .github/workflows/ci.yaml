@@ -13,23 +13,24 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
 
-      - name: Setup Mambaforge
+      - name: Setup conda
         uses: conda-incubator/setup-miniconda@v2
         with:
             miniforge-variant: Mambaforge
             miniforge-version: latest
             activate-environment: bky-iac
             use-mamba: true
+            environment-file: environment.yaml
 
-      - uses: actions/cache@v3
-        id: cache
-        with:
-          path: /usr/share/miniconda3/envs/bky-iac
-          key: conda-${{ hashFiles('environment.yaml', 'poetry.lock') }}-${{ env.CACHE_NUMBER }}
+      # - uses: actions/cache@v3
+      #   id: cache
+      #   with:
+      #     path: /usr/share/miniconda3/envs/bky-iac
+      #     key: conda-${{ hashFiles('environment.yaml', 'poetry.lock') }}-${{ env.CACHE_NUMBER }}
 
-      - name: Update environment
-        run: mamba env update -n bky-iac -f environment.yaml
-        if: steps.cache.outputs.cache-hit != 'true'
+      # - name: Update environment
+      #   run: mamba env update -n bky-iac -f environment.yaml
+      #   if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Some stats
         run: |
