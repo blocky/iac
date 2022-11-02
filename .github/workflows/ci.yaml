@@ -1,19 +1,46 @@
 name: CI
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+
 on: [push]
+
+env:
+  CACHE_NUMBER: 0  # increase to reset cache manually
+
 jobs:
-  test-unit:
+  build:
+    name: Here Goes Nothing
     runs-on: ubuntu-latest
     steps:
-      - uses: conda-incubator/setup-miniconda@v2
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Setup Mambaforge
+        uses: conda-incubator/setup-miniconda@v2
         with:
-          activate-environment: bky-iac
-          environment-file: environment.yaml
-          auto-activate-base: false
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - run: echo "🔎 Some stats:"
+            miniforge-variant: Mambaforge
+            miniforge-version: latest
+            activate-environment: bky-iac
+            use-mamba: true
+
+      - name: Set cache date
+        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
+      - uses: actions/cache@v2
+        with:
+          path: /usr/share/miniconda3/envs/bky-iac
+          key: conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+        id: cache
+
+      - name: Update environment
+        run: mamba env update -n my-env -f environment.yml
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: Some stats
       - run: |
+          echo "🔎 Some stats:"
           conda info
           conda list
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+          echo "🍏 This job's status is ${{ job.status }}."
+
+      - name: Run tests
+        shell: bash -l {0}
+        run: pytest ./tests
