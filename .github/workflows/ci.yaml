@@ -57,6 +57,7 @@ jobs:
           export live_data_dir="$HOME/iac-live-test-data"
           echo "$live_data_dir"
           mkdir "$live_data_dir"
+          iac --help
           # - >-
           #   BKY_IAC_ACCESS_KEY=$LIVE_ACCESS_KEY
           #   BKY_IAC_SECRET_KEY=$LIVE_SECRET_KEY
