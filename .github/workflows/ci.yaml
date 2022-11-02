@@ -21,26 +21,26 @@ jobs:
             activate-environment: bky-iac
             use-mamba: true
 
-      - name: Set cache date
-        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
-
-      - uses: actions/cache@v2
-        with:
-          path: /usr/share/miniconda3/envs/bky-iac
-          key: conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
-        id: cache
-
-      - name: Update environment
-        run: mamba env update -n my-env -f environment.yml
-        if: steps.cache.outputs.cache-hit != 'true'
-
-      - name: Some stats
-      - run: |
-          echo "🔎 Some stats:"
-          conda info
-          conda list
-          echo "🍏 This job's status is ${{ job.status }}."
-
-      - name: Run tests
-        shell: bash -l {0}
-        run: pytest ./tests
+      # - name: Set cache date
+      #   run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+      #
+      # - uses: actions/cache@v2
+      #   with:
+      #     path: /usr/share/miniconda3/envs/bky-iac
+      #     key: conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+      #   id: cache
+      #
+      # - name: Update environment
+      #   run: mamba env update -n my-env -f environment.yml
+      #   if: steps.cache.outputs.cache-hit != 'true'
+      #
+      # - name: Some stats
+      # - run: |
+      #     echo "🔎 Some stats:"
+      #     conda info
+      #     conda list
+      #     echo "🍏 This job's status is ${{ job.status }}."
+      #
+      # - name: Run tests
+      #   shell: bash -l {0}
+      #   run: pytest ./tests
