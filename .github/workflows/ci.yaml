@@ -4,12 +4,10 @@ on: [push]
 
 jobs:
   lint:
-    uses: github.com/iac/.github/workflows/setup.yml@c01bdd9bcc32fd174e36f4fd16eb30453df3a0a2
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -l {0}
     steps:
+      - name: Setup
+        uses: github.com/iac/.github/workflows/setup.yml@c01bdd9bcc32fd174e36f4fd16eb30453df3a0a2
+
       - name: Lint
         run: make lint
 
