@@ -34,9 +34,9 @@ jobs:
       - name: Some stats
         run: |
           echo "🔎 Some stats:"
-          conda info
-          conda list
           echo "🍏 This job's status is ${{ job.status }}."
+          # conda info
+          # conda list
       #
       # - name: Run tests
       #   shell: bash -l {0}
