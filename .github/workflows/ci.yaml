@@ -56,9 +56,10 @@ jobs:
           access_key: ${{ secrets.LIVE_ACCESS_KEY }}
           secret_key: ${{ secrets.LIVE_SECRET_KEY }}
           region: "us-east-1"
-          data_dir: "$HOME/iac-live-test-data"
+          data_dir_name: "iac-live-test-data"
           security_group: "mwittie-testing"
         run: |
+          export data_dir="$HOME/$data_dir_name"
           mkdir "$data_dir"
           BKY_IAC_ACCESS_KEY=$access_key \
             BKY_IAC_SECRET_KEY=$secret_key \
