@@ -32,15 +32,18 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Install python dependencies
-        run: poetry install
+        run: |
+          conda activate bky-iac
+          poetry install
         if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Some stats
         run: |
           echo "🔎 Some stats:"
+          conda info
+          conda activate bky-iac
+          conda info
           echo "🍏 This job's status is ${{ job.status }}."
-          # conda info
-          # conda list
       #
       # - name: Run tests
       #   shell: bash -l {0}
