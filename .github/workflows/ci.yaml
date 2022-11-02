@@ -59,6 +59,7 @@ jobs:
           export region="us-east-1"
           export live_data_dir="$HOME/iac-live-test-data"
           export security_group="mwittie-testing"
+          mkdir "$live_data_dir"
           BKY_IAC_ACCESS_KEY=$live_access_key \
             BKY_IAC_SECRET_KEY=$live_secret_key \
             BKY_IAC_REGION=$region \
