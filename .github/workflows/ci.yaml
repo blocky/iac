@@ -1,0 +1,19 @@
+name: CI
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+on: [push]
+jobs:
+  test-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: bky-iac
+          environment-file: environment.yaml
+          auto-activate-base: false
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - run: echo "🔎 Some stats:"
+      - run: |
+          conda info
+          conda list
+      - run: echo "🍏 This job's status is ${{ job.status }}."
