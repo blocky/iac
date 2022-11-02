@@ -23,8 +23,7 @@ jobs:
 
       - name: Get date
         id: get-date
-        run: echo "::set-output name=today::$(/bin/date -u '+%Y%m%d')"
-        shell: bash
+        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
 
       - name: Cache env
         id: cache
