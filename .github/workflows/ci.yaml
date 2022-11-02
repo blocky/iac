@@ -32,7 +32,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Some stats
-      - run: |
+        run: |
           echo "🔎 Some stats:"
           conda info
           conda list
