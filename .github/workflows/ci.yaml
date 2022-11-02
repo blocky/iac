@@ -52,12 +52,15 @@ jobs:
           pip install .
 
       - name: Live test
+        env:
+          live_access_key: ${{ secrets.LIVE_ACCESS_KEY }}
+          live_secret_key: ${{ secrets.LIVE_SECRET_KEY }}
         run: |
           export region="us-east-1"
           export live_data_dir="$HOME/iac-live-test-data"
           export security_group="mwittie-testing"
-          BKY_IAC_ACCESS_KEY=$LIVE_ACCESS_KEY \
-            BKY_IAC_SECRET_KEY=$LIVE_SECRET_KEY \
+          BKY_IAC_ACCESS_KEY=$live_access_key \
+            BKY_IAC_SECRET_KEY=$live_secret_key \
             BKY_IAC_REGION=$region \
             BKY_IAC_KEY_SECRETS_FOLDER=$live_data_dir \
             BKY_IAC_INSTANCE_SECURITY_GROUP=$security_group \
