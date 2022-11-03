@@ -25,7 +25,6 @@ runs:
       with:
         path: ${{ env.CONDA }}/envs
         key: conda-${{ hashFiles('environment.yaml', 'poetry.lock') }}-${{ steps.get-date.outputs.today }}-${{ env.CACHE_NUMBER }}
-      shell: bash -l {0}
 
     - name: Update environment
       run: |
@@ -38,3 +37,4 @@ runs:
       run: |
         poetry build
         pip install .
+      shell: bash -l {0}
