@@ -1,0 +1,41 @@
+name: E2E Tests
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    types: [opened, submitted]
+
+jobs:
+  job1:
+    name: Live Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Live test
+        env:
+          access_key: ${{ secrets.LIVE_ACCESS_KEY }}
+          secret_key: ${{ secrets.LIVE_SECRET_KEY }}
+          region: "us-east-1"
+          data_dir_name: "iac-live-test-data"
+          security_group: "mwittie-testing"
+        run: |
+          export data_dir="$HOME/$data_dir_name"
+          mkdir "$data_dir"
+          BKY_IAC_ACCESS_KEY=$access_key \
+            BKY_IAC_SECRET_KEY=$secret_key \
+            BKY_IAC_REGION=$region \
+            BKY_IAC_KEY_SECRETS_FOLDER=$data_dir \
+            BKY_IAC_INSTANCE_SECURITY_GROUP=$security_group \
+            BKY_IAC_DEPLOY_SECRETS_FOLDER=$data_dir \
+            make pyiac=iac test-live
+          rm -r "$data_dir"
