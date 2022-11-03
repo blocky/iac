@@ -3,6 +3,9 @@ description: Setup iac building
 
 runs:
   using: "composite"
+  defaults:
+    run:
+      shell: bash -l {0}
   steps:
     - name: Setup conda
       uses: conda-incubator/setup-miniconda@v2
