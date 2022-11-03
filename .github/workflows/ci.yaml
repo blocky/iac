@@ -34,6 +34,8 @@ jobs:
 
       - name: Setup
         uses: ./.github/actions/setup
+
+      - name: Live test
         env:
           access_key: ${{ secrets.LIVE_ACCESS_KEY }}
           secret_key: ${{ secrets.LIVE_SECRET_KEY }}
