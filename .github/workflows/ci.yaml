@@ -3,8 +3,8 @@ name: CI
 on: [push]
 
 jobs:
-  build:
-    name: Here Goes Nothing
+  job1:
+    name: Test and Build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -13,43 +13,27 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
 
-      - name: Setup conda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-            miniforge-variant: Mambaforge
-            miniforge-version: latest
-            activate-environment: bky-iac
-            use-mamba: true
-
-      - name: Get date
-        id: get-date
-        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
-
-      - name: Setup env caching
-        id: cache
-        uses: actions/cache@v3
-        env:
-          CACHE_NUMBER: 0  # increase to reset cache manually
-        with:
-          path: ${{ env.CONDA }}/envs
-          key: conda-${{ hashFiles('environment.yaml', 'poetry.lock') }}-${{ steps.get-date.outputs.today }}-${{ env.CACHE_NUMBER }}
-
-      - name: Update environment
-        run: |
-          mamba env update -n bky-iac -f environment.yaml
-          poetry install
-        if: steps.cache.outputs.cache-hit != 'true'
-
-      - name: Build and install
-        run: |
-          poetry build
-          pip install .
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: Lint
         run: make lint
 
       - name: Unit test
         run: make test-unit
+
+  job2:
+    name: Live Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: Live test
         env:
@@ -69,3 +53,88 @@ jobs:
             BKY_IAC_DEPLOY_SECRETS_FOLDER=$data_dir \
             make pyiac=iac test-live
           rm -r "$data_dir"
+
+
+
+
+
+
+
+
+#
+# name: CI
+#
+# on: [push]
+#
+# jobs:
+#   build:
+#     name: Here Goes Nothing
+#     runs-on: ubuntu-latest
+#     defaults:
+#       run:
+#         shell: bash -l {0}
+#     steps:
+#       - name: Check out repository code
+#         uses: actions/checkout@v3
+#
+#       - name: Setup conda
+#         uses: conda-incubator/setup-miniconda@v2
+#         with:
+#             miniforge-variant: Mambaforge
+#             miniforge-version: latest
+#             activate-environment: bky-iac
+#             use-mamba: true
+#
+#       - name: Get date
+#         id: get-date
+#         run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+#
+#       - name: Setup env caching
+#         id: cache
+#         uses: actions/cache@v3
+#         env:
+#           CACHE_NUMBER: 0  # increase to reset cache manually
+#         with:
+#           path: ${{ env.CONDA }}/envs
+#           key: conda-${{ hashFiles('environment.yaml', 'poetry.lock') }}-${{ steps.get-date.outputs.today }}-${{ env.CACHE_NUMBER }}
+#
+#       - name: Update environment
+#         run: |
+#           mamba env update -n bky-iac -f environment.yaml
+#           poetry install
+#         if: steps.cache.outputs.cache-hit != 'true'
+#
+#       - name: Build and install
+#         run: |
+#           poetry build
+#           pip install .
+#
+#       - name: Lint
+#         run: make lint
+#
+#       - name: Unit test
+#         run: make test-unit
+#
+#   live-test:
+#
+#
+#
+#
+#       - name: Live test
+#         env:
+#           access_key: ${{ secrets.LIVE_ACCESS_KEY }}
+#           secret_key: ${{ secrets.LIVE_SECRET_KEY }}
+#           region: "us-east-1"
+#           data_dir_name: "iac-live-test-data"
+#           security_group: "mwittie-testing"
+#         run: |
+#           export data_dir="$HOME/$data_dir_name"
+#           mkdir "$data_dir"
+#           BKY_IAC_ACCESS_KEY=$access_key \
+#             BKY_IAC_SECRET_KEY=$secret_key \
+#             BKY_IAC_REGION=$region \
+#             BKY_IAC_KEY_SECRETS_FOLDER=$data_dir \
+#             BKY_IAC_INSTANCE_SECURITY_GROUP=$security_group \
+#             BKY_IAC_DEPLOY_SECRETS_FOLDER=$data_dir \
+#             make pyiac=iac test-live
+#           rm -r "$data_dir"
