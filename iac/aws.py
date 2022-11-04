@@ -27,11 +27,21 @@ def get_credentials(cred_file: str) -> Credentials:
     return Credentials(row["Access key ID"], row["Secret access key"])
 
 
-def make_ec2_client(creds: Credentials, region: str) -> botocore.client.BaseClient:
-    ec2 = boto3.client(
-        "ec2",
-        aws_access_key_id=creds.access_key,
-        aws_secret_access_key=creds.secret_key,
-        region_name=region,
-    )
-    return ec2
+
+class AWSClient:
+    def __init__(self, creds: Credentials, region: str) -> None:
+        self.ec2 = boto3.client(
+            "ec2",
+            aws_access_key_id=creds.access_key,
+            aws_secret_access_key=creds.secret_key,
+            region_name=region,
+        )
+
+        self.route53 = boto3.client(
+            "route53",
+            aws_access_key_id=creds.access_key,
+            aws_secret_access_key=creds.secret_key,
+        )
+
+
+

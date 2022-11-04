@@ -78,7 +78,7 @@ def iac_cmd(
     elif conf.cred_file:
         creds = iac.get_credentials(conf.cred_file)
 
-    ctx.obj["ec2"] = iac.make_ec2_client(creds, conf.region) if creds else None
+    ctx.obj["client"] = iac.AWSClient(creds, conf.region) if creds else None
     ctx.obj["conf"] = conf
 
 
@@ -101,10 +101,10 @@ def key_create_cmd(ctx):
     fail_on_debug(ctx)
 
     conf = ctx.obj["conf"]
-    ec2 = ctx.obj["ec2"]
+    client = ctx.obj["client"]
 
     kfm = iac.KeyFileManager(conf.secrets_folder)
-    key = iac.create_key_pair(ec2, kfm, conf.key_name)
+    key = iac.create_key_pair(client.ec2, kfm, conf.key_name)
     console(key, to_dict=iac.Key.to_dict)
 
 
@@ -114,10 +114,10 @@ def key_delete_cmd(ctx):
     fail_on_debug(ctx)
 
     conf = ctx.obj["conf"]
-    ec2 = ctx.obj["ec2"]
+    client = ctx.obj["client"]
 
     kfm = iac.KeyFileManager(conf.secrets_folder)
-    key = iac.delete_key_pair(ec2, kfm, conf.key_name)
+    key = iac.delete_key_pair(client.ec2, kfm, conf.key_name)
     console(key, to_dict=iac.Key.to_dict)
 
 
@@ -126,7 +126,9 @@ def key_delete_cmd(ctx):
 def key_list_cmd(ctx):
     fail_on_debug(ctx)
 
-    keys = iac.list_key_pairs(ctx.obj["ec2"])
+    client = ctx.obj["client"]
+
+    keys = iac.list_key_pairs(client.ec2)
     console(keys, to_dict=iac.Key.to_dict)
 
 
@@ -171,8 +173,10 @@ def instance_create_cmd(ctx):
     fail_on_debug(ctx)
 
     conf = ctx.obj["conf"]
+    client = ctx.obj["client"]
+
     instance = iac.create_instance(
-        ctx.obj["ec2"],
+        client.ec2,
         iac.InstanceKind.from_str(conf.instance_kind),
         conf.instance_name,
         conf.key_name,
@@ -186,7 +190,10 @@ def instance_create_cmd(ctx):
 def instance_terminate_cmd(ctx):
     fail_on_debug(ctx)
 
-    instance = iac.terminate_instance(ctx.obj["ec2"], ctx.obj["conf"].instance_name)
+    client = ctx.obj["client"]
+    instance_name = ctx.obj["conf"].instance_name
+
+    instance = iac.terminate_instance(client.ec2, instance_name)
     console(instance, to_dict=iac.Instance.to_dict)
 
 
@@ -195,7 +202,9 @@ def instance_terminate_cmd(ctx):
 def instance_list_cmd(ctx):
     fail_on_debug(ctx)
 
-    instances = iac.list_instances(ctx.obj["ec2"])
+    client = ctx.obj["client"]
+
+    instances = iac.list_instances(client.ec2)
     console(instances, to_dict=iac.Instance.to_dict)
 
 
@@ -217,8 +226,10 @@ iac_cmd.add_command(config_cmd)
 
 def remote_runner(ctx):
     conf = ctx.obj["conf"]
+    client = ctx.obj["client"]
+
     key_file = iac.KeyFileManager(conf.secrets_folder).key_file(conf.key_name)
-    instance = iac.fetch_instance(ctx.obj["ec2"], conf.instance_name)
+    instance = iac.fetch_instance(client.ec2, conf.instance_name)
     return iac.RemoteCMDRunner.from_instance_and_key_file(instance, key_file)
 
 

@@ -38,10 +38,10 @@ def run_app(*args, **kwargs):
 
 
 @patch("iac.get_credentials")
-@patch("iac.make_ec2_client")
+@patch("iac.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "config", "deploy"])
 def test_setup_no_keys_or_creds(
-    mock_make_ec2_client,
+    mock_aws_client_init,
     mock_get_credentials,
     subcommand,
     config_file_with_no_creds_name,
@@ -54,14 +54,14 @@ def test_setup_no_keys_or_creds(
     assert result.exit_code == 0
 
     mock_get_credentials.assert_not_called()
-    mock_make_ec2_client.assert_not_called()
+    mock_aws_client_init.assert_not_called()
 
 
 @patch("iac.get_credentials")
-@patch("iac.make_ec2_client")
+@patch("iac.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
-def test_setup_make_ec2_client_uses_creds_file_when_missing_both_keys(
-    mock_make_ec2_client,
+def test_setup_aws_client_uses_creds_file_when_missing_both_keys(
+    mock_aws_client_init,
     mock_get_credentials,
     subcommand,
     config_file_name,
@@ -69,8 +69,8 @@ def test_setup_make_ec2_client_uses_creds_file_when_missing_both_keys(
     creds = Mock()
     mock_get_credentials.return_value = creds
 
-    ec2 = Mock()
-    mock_make_ec2_client.return_value = ec2
+    client = Mock()
+    mock_aws_client_init.return_value = client
 
     result = run_app(
         f"--config-file={config_file_name}",
@@ -80,14 +80,14 @@ def test_setup_make_ec2_client_uses_creds_file_when_missing_both_keys(
     assert result.exit_code == 0
 
     mock_get_credentials.assert_called_once_with("my-cred-file.csv")
-    mock_make_ec2_client.assert_called_once_with(creds, ANY)
+    mock_aws_client_init.assert_called_once_with(creds, ANY)
 
 
 @patch("iac.get_credentials")
-@patch("iac.make_ec2_client")
+@patch("iac.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
-def test_setup_make_ec2_client_uses_creds_file_when_missing_secret_key(
-    mock_make_ec2_client,
+def test_setup_aws_client_uses_creds_file_when_missing_secret_key(
+    mock_aws_client_init,
     mock_get_credentials,
     subcommand,
     config_file_name,
@@ -95,8 +95,8 @@ def test_setup_make_ec2_client_uses_creds_file_when_missing_secret_key(
     creds = Mock()
     mock_get_credentials.return_value = creds
 
-    ec2 = Mock()
-    mock_make_ec2_client.return_value = ec2
+    client = Mock()
+    mock_aws_client_init.return_value = client
 
     result = run_app(
         f"--config-file={config_file_name}",
@@ -107,14 +107,14 @@ def test_setup_make_ec2_client_uses_creds_file_when_missing_secret_key(
     assert result.exit_code == 0
 
     mock_get_credentials.assert_called_once_with("my-cred-file.csv")
-    mock_make_ec2_client.assert_called_once_with(creds, ANY)
+    mock_aws_client_init.assert_called_once_with(creds, ANY)
 
 
 @patch("iac.get_credentials")
-@patch("iac.make_ec2_client")
+@patch("iac.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
-def test_setup_make_ec2_client_uses_creds_file_when_missing_access_key(
-    mock_make_ec2_client,
+def test_setup_aws_client_uses_creds_file_when_missing_access_key(
+    mock_aws_client_init,
     mock_get_credentials,
     subcommand,
     config_file_name,
@@ -122,8 +122,8 @@ def test_setup_make_ec2_client_uses_creds_file_when_missing_access_key(
     creds = Mock()
     mock_get_credentials.return_value = creds
 
-    ec2 = Mock()
-    mock_make_ec2_client.return_value = ec2
+    client = Mock()
+    mock_aws_client_init.return_value = client
 
     result = run_app(
         f"--config-file={config_file_name}",
@@ -134,14 +134,14 @@ def test_setup_make_ec2_client_uses_creds_file_when_missing_access_key(
     assert result.exit_code == 0
 
     mock_get_credentials.assert_called_once_with("my-cred-file.csv")
-    mock_make_ec2_client.assert_called_once_with(creds, ANY)
+    mock_aws_client_init.assert_called_once_with(creds, ANY)
 
 
 @patch("iac.get_credentials")
-@patch("iac.make_ec2_client")
+@patch("iac.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
-def test_setup_make_ec2_client_uses_keys_when_both_keys_present(
-    mock_make_ec2_client,
+def test_setup_aws_client_uses_keys_when_both_keys_present(
+    mock_aws_client_init,
     mock_get_credentials,
     subcommand,
     config_file_name,
@@ -151,8 +151,8 @@ def test_setup_make_ec2_client_uses_keys_when_both_keys_present(
 
     creds = iac.aws.Credentials(access_key, secret_key)
 
-    ec2 = Mock()
-    mock_make_ec2_client.return_value = ec2
+    client = Mock()
+    mock_aws_client_init.return_value = client
 
     result = run_app(
         f"--config-file={config_file_name}",
@@ -164,7 +164,7 @@ def test_setup_make_ec2_client_uses_keys_when_both_keys_present(
     assert result.exit_code == 0
 
     mock_get_credentials.assert_not_called()
-    mock_make_ec2_client.assert_called_once_with(creds, ANY)
+    mock_aws_client_init.assert_called_once_with(creds, ANY)
 
 
 @patch("iac.fetch_instance")
