@@ -95,7 +95,6 @@ def test_iac_workflow__happy_path(pyiac):
 
     info("Checking instance creation")
     instances = iac("instance list")
-    info(instances)
     assert instance_name in {i["name"] for i in instances}
 
     info("Giving the system some time to startup")
