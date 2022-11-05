@@ -161,9 +161,9 @@ class InstanceRunningBarrier(Barrier):
     retry_count: int = 5
 
     def _is_running(self, inst: Instance) -> bool:
-        return inst.state == 'running'
+        return inst.state == "running"
 
-    def _warn(self, msg: str, out=sys.stderr)-> None:
+    def _warn(self, msg: str, out=sys.stderr) -> None:
         out.write(f"**Warning** {msg}")
 
     def wait(self, inst: Instance) -> Instance:
@@ -191,7 +191,7 @@ def create_instance(
     instance_name: str,
     key_name: str,
     security_group: str,
-    barrier:Barrier=Barrier(),
+    barrier: Barrier = Barrier(),
 ) -> Instance:
 
     instances = describe_instances(ec2, instance_name)

@@ -92,8 +92,7 @@ def test_describe_instances__happy_path_instance_name(aws_parrot):
 
 def test_describe_instances__happy_path_many_instances(aws_parrot):
     ec2 = Mock()
-    ec2.describe_instances.return_value = \
-       aws_parrot.describe_instances__many_instances
+    ec2.describe_instances.return_value = aws_parrot.describe_instances__many_instances
 
     got = iac.instance.describe_instances(ec2)
     assert [aws_parrot.other_instance, aws_parrot.instance] == got
@@ -374,8 +373,7 @@ def test_terminate_instance__cloud_terminate_exception(mock_describe_instances):
 @patch("iac.instance.describe_instances")
 def test_terminate_instance__still_running(mock_describe_instances, aws_parrot):
     ec2 = Mock()
-    ec2.terminate_instances.return_value = \
-        aws_parrot.terminate_instances_result("running")
+    ec2.terminate_instances.return_value = aws_parrot.terminate_instances_result("running")
 
     instance = iac.Instance(name="a", state="running", id="a_id")
     mock_describe_instances.return_value = [instance]
@@ -452,6 +450,7 @@ def test_instance_running_barrier_wait_instance_ok_from_start():
 
     assert got == running
     ec2.assert_not_called()
+
 
 @patch("iac.instance.fetch_instance")
 def test_instance_running_barrier_wait_instance_ok_after_retry(
