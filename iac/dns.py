@@ -63,7 +63,6 @@ class DNSManager:
             )
 
         zone = HostedZone.from_aws_hosted_zone(hosted_zones[0])
-        print(zone)
 
 
 

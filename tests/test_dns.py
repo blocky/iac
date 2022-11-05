@@ -1,3 +1,5 @@
+from unittest.mock import Mock, patch
+
 from pytest import mark, raises
 
 import iac
@@ -26,4 +28,31 @@ def test_hosted_zone__from_aws_hosted_zone__happy_path(aws_parrot):
     response = aws_parrot.list_hosted_zones_by_name__one_zone
     zone = iac.dns.HostedZone.from_aws_hosted_zone(response["HostedZones"][0])
     assert zone == aws_parrot.hosted_zone
-    print(zone)
+
+
+
+def test_dns_manager__create_a_record__happy_path(aws_parrot):
+    pass
+
+
+def test_dns_manager__create_a_record__fail_to_parse_host(aws_parrot):
+    dns = Mock()
+
+    with raises(iac.IACException) as exc_info:
+        iac.DNSManager(dns).create_a_record("invalid-host", "ip-addres")
+
+    assert exc_info.value.error_code == iac.IACErrorCode.INVALID_HOST
+    dns.assert_not_called()
+
+
+def test_dns_manager__create_a_record__unexpected_hosted_zones(aws_parrot):
+    dns = Mock()
+    dns.list_hosted_zones_by_name.return_value = \
+        aws_parrot.list_hosted_zones_by_name__zero_zones
+
+    with raises(iac.IACException) as exc_info:
+        iac.DNSManager(dns).create_a_record("abc.bky.sh", "ip-addres")
+
+    assert exc_info.value.error_code == iac.IACErrorCode.INVALID_HOST
+    assert str(exc_info.value).startswith("Error getting host id")
+    dns.list_hosted_zones_by_name.assert_called_once()
