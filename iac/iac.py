@@ -181,6 +181,7 @@ def instance_create_cmd(ctx):
         conf.instance_name,
         conf.key_name,
         conf.security_group,
+        iac.instance.InstanceRunningBarrier(client.ec2),
     )
     console(instance, to_dict=iac.Instance.to_dict)
 

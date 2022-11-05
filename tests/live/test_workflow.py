@@ -4,6 +4,7 @@ import random
 import string
 import subprocess
 import tempfile
+import time
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,7 +41,6 @@ class IACRunner:
 
         proc = run(cmd, log_cmd=self.log_cmd)
         assert proc.returncode == 0
-        assert proc.stderr == ""
 
         output = proc.stdout
         return json.loads(output) if output and load_output else {}
@@ -96,6 +96,9 @@ def test_iac_workflow__happy_path(pyiac):
     info("Checking instance creation")
     instances = iac("instance list")
     assert instance_name in {i["name"] for i in instances}
+
+    info("Giving the system some time to startup")
+    time.sleep(10)
 
     with tempfile.NamedTemporaryFile(prefix="bky-iac-") as tmp:
         junk = "".join(random.choices(string.ascii_lowercase, k=5))

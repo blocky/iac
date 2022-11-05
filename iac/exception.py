@@ -10,6 +10,7 @@ class IACErrorCode(Enum):
     KEY_DELETE_FAIL = auto()
     DUPLICATE_INSTANCE = auto()
     INSTANCE_NAME_COLLISION = auto()
+    INSTANCE_NOT_RUNNING = auto()
     INSTANCE_TERMINATION_FAIL = auto()
     NO_SUCH_INSTANCE = auto()
     NO_SUCH_INSTANCE_KIND = auto()
