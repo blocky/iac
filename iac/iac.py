@@ -46,7 +46,15 @@ def fail_on_debug(ctx):
         raise click.UsageError("Cannot run command in debug mode")
 
 
-@click.group()
+class CatchAllExceptions(click.Group):
+    def __call__(self, *args, **kwargs):
+        try:
+            return self.main(*args, **kwargs)
+        except iac.IACException as exc:
+            console(f"{exc.error_code.name}: {exc}")
+
+
+@click.group(cls=CatchAllExceptions)
 @click.option("--config-file", show_envvar=True)
 @click.option("--access-key", show_envvar=True)
 @click.option("--secret-key", show_envvar=True)
@@ -272,3 +280,22 @@ iac_cmd.add_command(deploy_cmd)
 deploy_cmd.add_command(deploy_cmd_copy)
 deploy_cmd.add_command(deploy_cmd_run)
 deploy_cmd.add_command(x_dbgconf_cmd)
+
+
+# @click.group(name="dns")
+@click.command(name="dns")
+@click.pass_context
+def dns_cmd(ctx):
+    conf = ctx.obj["conf"]
+    client = ctx.obj["client"]
+
+    dns = iac.DNSManager(client.route53)
+    instance = iac.fetch_instance(client.ec2, conf.instance_name)
+    dns.create_a_record("a.b.dlm.bky.sh", instance.public_ip_address)
+    dns.create_a_record("a.b.dlm.blockymcchainerson.com", instance.public_ip_address)
+
+iac_cmd.add_command(dns_cmd)
+
+
+
+

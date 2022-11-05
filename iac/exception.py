@@ -14,6 +14,7 @@ class IACErrorCode(Enum):
     INSTANCE_TERMINATION_FAIL = auto()
     NO_SUCH_INSTANCE = auto()
     NO_SUCH_INSTANCE_KIND = auto()
+    INVALID_HOST = auto()
 
 
 class IACException(Exception):

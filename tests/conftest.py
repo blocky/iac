@@ -33,6 +33,9 @@ class AWSCannedResponses:
         self.other_instance_id = "test-instance2-id"
         self.other_instance_name = "test-instance2"
 
+        self.dns_name = "bky.sh"
+        self.hosted_zone_id = "Z05346603ECE7KDEFCYS2"
+
     @property
     def instance(self):
         # resp = self.describe_instances__one_instance
@@ -802,6 +805,53 @@ class AWSCannedResponses:
             },
             "CreateKeyPair",
         )
+
+
+
+    @property
+    def list_hosted_zones_by_name__zero_zones(self):
+        return {
+            'DNSName': 'boom.sh',
+            'HostedZones': [],
+            'IsTruncated': False,
+            'MaxItems': '1',
+            'ResponseMetadata': {'HTTPHeaders': {'content-length': '233',
+                'content-type': 'text/xml',
+                'date': 'Sat, 05 Nov 2022 21:30:53 GMT',
+                'x-amzn-requestid': 'd235ba78-91a1-43ab-8139-bc4ad1b8f357'},
+            'HTTPStatusCode': 200,
+            'RequestId': 'd235ba78-91a1-43ab-8139-bc4ad1b8f357',
+            'RetryAttempts': 0}
+        }
+
+    @property
+    def hosted_zone(self):
+        return iac.dns.HostedZone(
+            hz_id=self.hosted_zone_id,
+            dns_name=self.dns_name,
+        )
+
+    @property
+    def list_hosted_zones_by_name__one_zone(self):
+        return {
+            'DNSName': self.dns_name,
+            'HostedZones': [{
+                'CallerReference': '079df300-ed87-4459-ad5d-f9d56f1412bf',
+                'Config': {'Comment': '', 'PrivateZone': False},
+                'Id': f'/hostedzone/{self.hosted_zone_id}',
+                'Name': f'{self.dns_name}.',
+                'ResourceRecordSetCount': 6,
+            }],
+            'IsTruncated': False,
+            'MaxItems': '1',
+            'ResponseMetadata': {'HTTPHeaders': {'content-length': '521',
+                'content-type': 'text/xml',
+                'date': 'Sat, 05 Nov 2022 21:22:30 GMT',
+                'x-amzn-requestid': '6132ec8b-9e1d-406b-9da8-db7bf0777d03'},
+            'HTTPStatusCode': 200,
+            'RequestId': '6132ec8b-9e1d-406b-9da8-db7bf0777d03',
+            'RetryAttempts': 0}
+        }
 
 
 @pytest.fixture
