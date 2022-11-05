@@ -1,6 +1,9 @@
+import time
+import sys
 from dataclasses import dataclass
 from typing import TypeVar
 from enum import Enum
+
 
 import botocore.client
 
@@ -44,10 +47,13 @@ InstanceSelf = TypeVar("InstanceSelf", bound="Instance")
 @dataclass(frozen=True)
 class Instance:
     name: str
+    state: str
     id: str = None
     key_name: str = None
     tags: [iac.aws.Tag] = None
     public_dns_name: str = None
+    public_ip_address: str = None
+    nitro: bool = None
 
     @staticmethod
     def from_aws_instance(inst: dict) -> InstanceSelf:
@@ -56,9 +62,12 @@ class Instance:
         return Instance(
             name=name,
             id=inst["InstanceId"],
+            state=inst["State"]["Name"],
             key_name=inst["KeyName"],
             tags=tags,
-            public_dns_name=inst["PublicDnsName"],
+            public_dns_name=inst.get("PublicDnsName", None),
+            public_ip_address=inst.get("PublicIpAddress", None),
+            nitro=inst["EnclaveOptions"]["Enabled"],
         )
 
     @staticmethod
@@ -140,12 +149,49 @@ def _ec2_config(
     return definition
 
 
+class Barrier:
+    def wait(self, inst: Instance) -> Instance:
+        return inst
+
+
+@dataclass(frozen=True)
+class InstanceRunningBarrier(Barrier):
+    ec2: botocore.client.BaseClient
+    sleep_time: float = 10
+    retry_count: int = 5
+
+    def _is_running(self, inst: Instance) -> bool:
+        return inst.state == 'running'
+
+    def _warn(self, msg: str, out=sys.stderr)-> None:
+        out.write(f"**Warning** {msg}")
+
+    def wait(self, inst: Instance) -> Instance:
+        running_inst = inst if self._is_running(inst) else None
+
+        remaining_attempts = self.retry_count
+        while not running_inst and remaining_attempts > 0:
+            self._warn("Instance is pending, checking again")
+            time.sleep(self.sleep_time)
+            inst = fetch_instance(self.ec2, inst.name)
+            running_inst = inst if self._is_running(inst) else None
+            remaining_attempts -= 1
+
+        if not running_inst:
+            raise IACInstanceError(
+                IACErrorCode.INSTANCE_NOT_RUNNING,
+                f"Instance not running, still in {inst.state}",
+            )
+        return running_inst
+
+
 def create_instance(
     ec2: botocore.client.BaseClient,
     kind: InstanceKind,
     instance_name: str,
     key_name: str,
     security_group: str,
+    barrier:Barrier=Barrier(),
 ) -> Instance:
 
     instances = describe_instances(ec2, instance_name)
@@ -157,8 +203,9 @@ def create_instance(
 
     config = _ec2_config(kind, instance_name, key_name, security_group)
     res = ec2.run_instances(**config)
-    inst = res["Instances"][0]
-    return Instance.from_aws_instance(inst)
+    inst = Instance.from_aws_instance(res["Instances"][0])
+
+    return barrier.wait(inst)
 
 
 def terminate_instance(ec2: botocore.client.BaseClient, instance_name: str) -> Instance:

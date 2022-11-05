@@ -9,7 +9,7 @@ def test_remote_cmd_runner__from_instance_and_key_file(mock_fabric):
     path = "path"
     username = "username"
 
-    instance = iac.Instance(name="name", public_dns_name=dns_name)
+    instance = iac.Instance(name="name", state="running", public_dns_name=dns_name)
     key_file = iac.KeyFile(path=path, username=username)
 
     iac.RemoteCMDRunner.from_instance_and_key_file(instance, key_file)

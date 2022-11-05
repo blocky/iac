@@ -40,7 +40,6 @@ class IACRunner:
 
         proc = run(cmd, log_cmd=self.log_cmd)
         assert proc.returncode == 0
-        assert proc.stderr == ""
 
         output = proc.stdout
         return json.loads(output) if output and load_output else {}

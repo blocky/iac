@@ -25,6 +25,7 @@ class AWSCannedResponses:
         self.instance_id = "test-instance-id"
         self.instance_name = "test-instance"
         self.instance_public_dns = "test-instance1-dns.compute-1.amazonaws.com"
+        self.instance_public_ip = "34.238.190.126"
         self.key_name = "test-key"
         self.security_group = "test-security-group"
 
@@ -33,6 +34,7 @@ class AWSCannedResponses:
 
     @property
     def instance(self):
+        # resp = self.describe_instances__one_instance
         resp = self.describe_instances__one_instance
         inst = resp["Reservations"][0]["Instances"][0]
         return iac.Instance.from_aws_instance(inst)
@@ -177,14 +179,14 @@ class AWSCannedResponses:
                             "PrivateIpAddress": "172.31.51.34",
                             "ProductCodes": [],
                             "PublicDnsName": self.instance_public_dns,
-                            "PublicIpAddress": "3.235.31.42",
+                            "PublicIpAddress": self.instance_public_ip,
                             "RootDeviceName": "/dev/xvda",
                             "RootDeviceType": "ebs",
                             "SecurityGroups": [
                                 {"GroupId": self.security_group, "GroupName": "some-name"}
                             ],
                             "SourceDestCheck": True,
-                            "State": {"Code": 0, "Name": "pending"},
+                            "State": {"Code": 16, "Name": "running"},
                             "StateTransitionReason": "",
                             "SubnetId": "subnet-d95b9cd7",
                             "Tags": [
@@ -382,7 +384,7 @@ class AWSCannedResponses:
                             "PrivateIpAddress": "172.31.51.163",
                             "ProductCodes": [],
                             "PublicDnsName": self.instance_public_dns,
-                            "PublicIpAddress": "34.238.190.126",
+                            "PublicIpAddress": self.instance_public_ip,
                             "State": {"Code": 16, "Name": "running"},
                             "StateTransitionReason": "",
                             "SubnetId": "subnet-d95b9cd7",
