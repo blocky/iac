@@ -159,7 +159,7 @@ class Barrier:
 class InstanceRunningBarrier(Barrier):
     ec2: botocore.client.BaseClient
     sleep_time: float = 10
-    retry_count: int = 5
+    retry_count: int = 9
 
     def _is_running(self, inst: Instance) -> bool:
         return inst.state == "running"
