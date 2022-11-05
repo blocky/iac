@@ -21,6 +21,7 @@ def pyiac(pytestconfig):
 
 
 class AWSCannedResponses:
+    # pylint: disable = too-many-instance-attributes
     def __init__(self):
         self.instance_id = "test-instance-id"
         self.instance_name = "test-instance"

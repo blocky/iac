@@ -45,6 +45,7 @@ InstanceSelf = TypeVar("InstanceSelf", bound="Instance")
 
 
 @dataclass(frozen=True)
+# pylint: disable = too-many-instance-attributes
 class Instance:
     name: str
     state: str
@@ -193,7 +194,7 @@ def create_instance(
     security_group: str,
     barrier: Barrier = Barrier(),
 ) -> Instance:
-
+    # pylint: disable = too-many-arguments
     instances = describe_instances(ec2, instance_name)
     if len(instances) != 0:
         raise IACInstanceWarning(
