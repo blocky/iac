@@ -25,29 +25,38 @@ HostedZoneSelf = TypeVar("HostedZoneSelf", bound="HostedZone")
 @dataclass(frozen=True)
 class HostedZone:
     hz_id: str
-    dns_name: str
+    fqdn: str
 
     @staticmethod
     def from_aws_hosted_zone(zone: dict) -> HostedZoneSelf:
         # id is in form of /hostedzone/{HostedZoneId}
         hz_id = zone['Id'].replace("/hostedzone/","")
+        fqdn = zone['Name']
 
-        # not exactly sure about this one....
-        # It seems the AWS response has a trailing '.'
-        # For example:
-        # - "bky.sh" returns "bky.sh."
-        # - "blockymcchainerson.com" returns "blockymcchainerson.com."
-        dns_name = zone['Name'][:-1]
+        return HostedZone(hz_id=hz_id, fqdn=fqdn)
 
-        return HostedZone(hz_id, dns_name)
+
+ResourceRecordSelf = TypeVar("ResourceRecordSelf", bound="ResourceRecord")
+
+@dataclass(frozen=True)
+class ResourceRecord:
+    fqdn: str
+    ip: str
+    record_type: str
+
+    def from_aws(data: dict) -> ResourceRecordSelf:
+        return ResourceRecord(
+            fqdn=data['Name'],
+            ip = data['ResourceRecords'][0]['Value'],
+            record_type = data['Type'],
+        )
 
 
 class DNSManager:
     def __init__(self, client: botocore.client.BaseClient):
         self._client = client
 
-
-    def create_a_record(self, host: str, ip: str) -> None:
+    def _hosted_zone(self, host: str) -> HostedZone:
         domain, subdomain = parse_host(host)
 
         response = self._client.list_hosted_zones_by_name(

@@ -33,14 +33,16 @@ class AWSCannedResponses:
         self.other_instance_id = "test-instance2-id"
         self.other_instance_name = "test-instance2"
 
-        self.dns_name = "bky.sh"
-        self.hosted_zone_id = "Z05346603ECE7KDEFCYS2"
+        self.hosted_zone = iac.dns.HostedZone(
+            fqdn="bky.sh.",
+            hz_id="Z05346603ECE7KDEFCYS2",
+        )
 
         self.resource_record = iac.dns.ResourceRecord(
             fqdn="a.b.dlm.bky.sh.",
-             ip="'18.205.236.134",
-             record_type="A",
-         )
+            ip="'18.205.236.134",
+            record_type="A",
+        )
 
     @property
     def instance(self):
@@ -830,23 +832,17 @@ class AWSCannedResponses:
             'RetryAttempts': 0}
         }
 
-    @property
-    def hosted_zone(self):
-        return iac.dns.HostedZone(
-            hz_id=self.hosted_zone_id,
-            dns_name=self.dns_name,
-        )
 
 
     @property
     def list_hosted_zones_by_name__one_zone(self):
         return {
-            'DNSName': self.dns_name,
+            'DNSName': self.hosted_zone.fqdn[:-1],
             'HostedZones': [{
                 'CallerReference': '079df300-ed87-4459-ad5d-f9d56f1412bf',
                 'Config': {'Comment': '', 'PrivateZone': False},
-                'Id': f'/hostedzone/{self.hosted_zone_id}',
-                'Name': f'{self.dns_name}.',
+                'Id': f'/hostedzone/{self.hosted_zone.hz_id}',
+                'Name': self.hosted_zone.fqdn,
                 'ResourceRecordSetCount': 6,
             }],
             'IsTruncated': False,
