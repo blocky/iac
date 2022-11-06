@@ -71,7 +71,44 @@ class DNSManager:
                 f"Error getting host id from route 53 for '{host}': '{response}'",
             )
 
-        zone = HostedZone.from_aws_hosted_zone(hosted_zones[0])
+        return HostedZone.from_aws(hosted_zones[0])
+
+
+    def change_a_record(self, op: str, host: str, ip: str) -> dict:
+        if op not in {"CREATE", "DELETE"}:
+            raise IACError(
+                IACErrorCode.INVALID_DNS_A_RECORD_OPERAION,
+                f"Invalid operation on an A record operation '{op}'",
+            )
+
+
+
+
+
+        zone = self._hosted_zone(host)
+
+        return self._client.change_resource_record_sets(
+            HostedZoneId=zone.hz_id,
+            ChangeBatch={
+                "Changes": [{
+                    "Action": op,
+                    'ResourceRecordSet': {
+                        'Name': host,
+                        'Type': "A",
+                        "TTL": 300,
+                        'ResourceRecords': [{ 'Value': ip }],
+                    }
+                }]
+            }
+        )
+
+
+    def create_a_record(self, host: str, ip: str) -> None:
+        self.change_a_record('CREATE', host, ip)
+
+    def delete_a_record(self, host: str, ip: str) -> None:
+        self.change_a_record('DELETE', host, ip)
+
 
 
 

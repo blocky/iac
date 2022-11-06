@@ -36,22 +36,42 @@ def test_resource_record__from_aws__happy_path(aws_parrot):
     assert zone == aws_parrot.resource_record
 
 
+def test_dns_manager__change_a_record__happy_path(aws_parrot):
+    dns = Mock()
+    dns.list_hosted_zones_by_name.return_value = \
+        aws_parrot.list_hosted_zones_by_name__one_zone
+    dns.change_resource_record_sets.return_value = \
+        aws_parrot.change_resource_record_sets__succeess
 
-def test_dns_manager__create_a_record__happy_path(aws_parrot):
-    pass
+    iac.DNSManager(dns).create_a_record("abc.bky.sh", "ip-addres")
+
+    dns.list_hosted_zones_by_name.assert_called_once()
+    dns.change_resource_record_sets.assert_called_once()
 
 
-def test_dns_manager__create_a_record__fail_to_parse_host(aws_parrot):
+def test_dns_manager__change_a_record__fail_to_parse_host(aws_parrot):
     dns = Mock()
 
     with raises(iac.IACException) as exc_info:
-        iac.DNSManager(dns).create_a_record("invalid-host", "ip-addres")
+        iac.DNSManager(dns).change_a_record("nope", "invalid-host", "ip-addres")
+
+    assert exc_info.value.error_code == iac.IACErrorCode.INVALID_DNS_A_RECORD_OPERAION
+    dns.assert_not_called()
+
+
+@mark.parametrize("op", ["CREATE", "DELETE"])
+def test_dns_manager__change_a_record__fail_to_parse_host(op):
+    dns = Mock()
+
+    with raises(iac.IACException) as exc_info:
+        iac.DNSManager(dns).change_a_record(op, "invalid-host", "ip-addres")
 
     assert exc_info.value.error_code == iac.IACErrorCode.INVALID_HOST
     dns.assert_not_called()
 
 
-def test_dns_manager__create_a_record__unexpected_hosted_zones(aws_parrot):
+@mark.parametrize("op", ["CREATE", "DELETE"])
+def test_dns_manager__change_a_record__unexpected_hosted_zones(op, aws_parrot):
     dns = Mock()
     dns.list_hosted_zones_by_name.return_value = \
         aws_parrot.list_hosted_zones_by_name__zero_zones
