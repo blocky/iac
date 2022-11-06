@@ -24,9 +24,9 @@ def test_parse_host__malformed(host):
     assert exc_info.value.error_code == iac.IACErrorCode.INVALID_HOST
 
 
-def test_hosted_zone__from_aws_hosted_zone__happy_path(aws_parrot):
+def test_hosted_zone__from_aws__happy_path(aws_parrot):
     response = aws_parrot.list_hosted_zones_by_name__one_zone
-    zone = iac.dns.HostedZone.from_aws_hosted_zone(response["HostedZones"][0])
+    zone = iac.dns.HostedZone.from_aws(response["HostedZones"][0])
     assert zone == aws_parrot.hosted_zone
 
 

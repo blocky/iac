@@ -28,7 +28,7 @@ class HostedZone:
     fqdn: str
 
     @staticmethod
-    def from_aws_hosted_zone(zone: dict) -> HostedZoneSelf:
+    def from_aws(zone: dict) -> HostedZoneSelf:
         # id is in form of /hostedzone/{HostedZoneId}
         hz_id = zone['Id'].replace("/hostedzone/","")
         fqdn = zone['Name']
