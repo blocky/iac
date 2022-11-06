@@ -30,6 +30,12 @@ def test_hosted_zone__from_aws_hosted_zone__happy_path(aws_parrot):
     assert zone == aws_parrot.hosted_zone
 
 
+def test_resource_record__from_aws__happy_path(aws_parrot):
+    response = aws_parrot.list_resource_record_sets
+    zone = iac.dns.ResourceRecord.from_aws(response["ResourceRecordSets"][0])
+    assert zone == aws_parrot.resource_record
+
+
 
 def test_dns_manager__create_a_record__happy_path(aws_parrot):
     pass

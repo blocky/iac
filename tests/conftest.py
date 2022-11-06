@@ -36,6 +36,12 @@ class AWSCannedResponses:
         self.dns_name = "bky.sh"
         self.hosted_zone_id = "Z05346603ECE7KDEFCYS2"
 
+        self.resource_record = iac.dns.ResourceRecord(
+            fqdn="a.b.dlm.bky.sh.",
+             ip="'18.205.236.134",
+             record_type="A",
+         )
+
     @property
     def instance(self):
         # resp = self.describe_instances__one_instance
@@ -831,6 +837,7 @@ class AWSCannedResponses:
             dns_name=self.dns_name,
         )
 
+
     @property
     def list_hosted_zones_by_name__one_zone(self):
         return {
@@ -853,6 +860,36 @@ class AWSCannedResponses:
             'RetryAttempts': 0}
         }
 
+    @property
+    def change_resource_record_sets__succeess(self):
+        return {'ChangeInfo': {'Id': '/change/C01794081MEKLH83PRA05',
+            'Status': 'PENDING',
+            'SubmittedAt': datetime.datetime(2022, 11, 5, 23, 53, 30, 663000, tzinfo=tzutc())},
+               'ResponseMetadata': {'HTTPHeaders': {'content-length': '283',
+                   'content-type': 'text/xml',
+                   'date': 'Sat, 05 Nov 2022 23:53:30 GMT',
+                   'x-amzn-requestid': '7ca9ac33-fb8c-4b8d-b4fb-48d20abca451'},
+               'HTTPStatusCode': 200,
+               'RequestId': '7ca9ac33-fb8c-4b8d-b4fb-48d20abca451',
+               'RetryAttempts': 0}}
+
+    @property
+    def list_resource_record_sets(self):
+        return {'IsTruncated': True,
+            'MaxItems': '1',
+            'NextRecordName': 'mwittie.bky.sh.',
+            'NextRecordType': 'A',
+            'ResourceRecordSets': [{'Name': self.resource_record.fqdn,
+                'ResourceRecords': [{'Value': self.resource_record.ip}],
+                'TTL': 300,
+                'Type': self.resource_record.record_type}],
+            'ResponseMetadata': {'HTTPHeaders': {'content-length': '509',
+                'content-type': 'text/xml',
+                'date': 'Sun, 06 Nov 2022 00:15:22 GMT',
+                'x-amzn-requestid': '02cf40ff-c43f-4e42-931a-1398cdd4474e'},
+            'HTTPStatusCode': 200,
+            'RequestId': '02cf40ff-c43f-4e42-931a-1398cdd4474e',
+            'RetryAttempts': 0}}
 
 @pytest.fixture
 def aws_parrot():
