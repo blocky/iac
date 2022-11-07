@@ -82,3 +82,45 @@ def test_dns_manager__change_a_record__unexpected_hosted_zones(op, aws_parrot):
     assert exc_info.value.error_code == iac.IACErrorCode.INVALID_HOST
     assert str(exc_info.value).startswith("Error getting host id")
     dns.list_hosted_zones_by_name.assert_called_once()
+
+
+def test_dns_manager__fetch_a_record__happy_path(aws_parrot):
+    dns = Mock()
+    dns.list_hosted_zones_by_name.return_value = \
+        aws_parrot.list_hosted_zones_by_name__one_zone
+    dns.list_resource_record_sets.return_value = \
+        aws_parrot.list_resource_record_sets__one_record
+
+    resource_record = iac.DNSManager(dns).fetch_a_record("a.b.dlm.bky.sh.")
+
+    assert aws_parrot.resource_record == resource_record
+
+
+def test_dns_manager__fetch_a_record__non_matching_record(aws_parrot):
+    dns = Mock()
+    dns.list_hosted_zones_by_name.return_value = \
+        aws_parrot.list_hosted_zones_by_name__one_zone
+    dns.list_resource_record_sets.return_value = \
+        aws_parrot.list_resource_record_sets__one_record
+
+    with raises(iac.IACException) as exc_info:
+        resource_record = iac.DNSManager(dns).fetch_a_record("a.b.c.dlm.bky.sh.")
+
+    assert exc_info.value.error_code == iac.IACErrorCode.DNS_RECORD_NOT_FOUND
+    dns.list_hosted_zones_by_name.assert_called_once()
+    dns.list_resource_record_sets.assert_called_once()
+
+
+def test_dns_manager__fetch_a_record__not_one_record(aws_parrot):
+    dns = Mock()
+    dns.list_hosted_zones_by_name.return_value = \
+        aws_parrot.list_hosted_zones_by_name__one_zone
+    dns.list_resource_record_sets.return_value = \
+        aws_parrot.list_resource_record_sets__not_one_record
+
+    with raises(iac.IACException) as exc_info:
+        resource_record = iac.DNSManager(dns).fetch_a_record("a.b.dlm.bky.sh.")
+
+    assert exc_info.value.error_code == iac.IACErrorCode.UNEXPECTED_NUMBER_OF_RECORDS
+    dns.list_hosted_zones_by_name.assert_called_once()
+    dns.list_resource_record_sets.assert_called_once()

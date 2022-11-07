@@ -870,7 +870,7 @@ class AWSCannedResponses:
                'RetryAttempts': 0}}
 
     @property
-    def list_resource_record_sets(self):
+    def list_resource_record_sets__one_record(self):
         return {'IsTruncated': True,
             'MaxItems': '1',
             'NextRecordName': 'mwittie.bky.sh.',
@@ -879,6 +879,21 @@ class AWSCannedResponses:
                 'ResourceRecords': [{'Value': self.resource_record.ip}],
                 'TTL': 300,
                 'Type': self.resource_record.record_type}],
+            'ResponseMetadata': {'HTTPHeaders': {'content-length': '509',
+                'content-type': 'text/xml',
+                'date': 'Sun, 06 Nov 2022 00:15:22 GMT',
+                'x-amzn-requestid': '02cf40ff-c43f-4e42-931a-1398cdd4474e'},
+            'HTTPStatusCode': 200,
+            'RequestId': '02cf40ff-c43f-4e42-931a-1398cdd4474e',
+            'RetryAttempts': 0}}
+
+    @property
+    def list_resource_record_sets__not_one_record(self):
+        return {'IsTruncated': True,
+            'MaxItems': '1',
+            'NextRecordName': 'mwittie.bky.sh.',
+            'NextRecordType': 'A',
+            'ResourceRecordSets': [],
             'ResponseMetadata': {'HTTPHeaders': {'content-length': '509',
                 'content-type': 'text/xml',
                 'date': 'Sun, 06 Nov 2022 00:15:22 GMT',

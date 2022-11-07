@@ -291,8 +291,9 @@ def dns_cmd(ctx):
 
     dns = iac.DNSManager(client.route53)
     instance = iac.fetch_instance(client.ec2, conf.instance_name)
-    dns.create_a_record("a.b.dlm.bky.sh", instance.public_ip_address)
-    dns.create_a_record("a.b.dlm.blockymcchainerson.com", instance.public_ip_address)
+    # dns.create_a_record("a.b.dlm.bky.sh", instance.public_ip_address)
+    dns.fetch_a_record("x.b.dlm.bky.sh")
+    # dns.delete_a_record("a.b.dlm.bky.sh", instance.public_ip_address)
 
 iac_cmd.add_command(dns_cmd)
 

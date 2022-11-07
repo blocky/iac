@@ -16,6 +16,8 @@ class IACErrorCode(Enum):
     NO_SUCH_INSTANCE_KIND = auto()
     INVALID_HOST = auto()
     INVALID_DNS_A_RECORD_OPERAION = auto()
+    UNEXPECTED_NUMBER_OF_RECORDS = auto()
+    DNS_RECORD_NOT_FOUND = auto()
 
 
 class IACException(Exception):
