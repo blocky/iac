@@ -46,15 +46,7 @@ def fail_on_debug(ctx):
         raise click.UsageError("Cannot run command in debug mode")
 
 
-class CatchAllExceptions(click.Group):
-    def __call__(self, *args, **kwargs):
-        try:
-            return self.main(*args, **kwargs)
-        except iac.IACException as exc:
-            console(f"{exc.error_code.name}: {exc}")
-
-
-@click.group(cls=CatchAllExceptions)
+@click.group()
 @click.option("--config-file", show_envvar=True)
 @click.option("--access-key", show_envvar=True)
 @click.option("--secret-key", show_envvar=True)
@@ -282,30 +274,15 @@ deploy_cmd.add_command(deploy_cmd_run)
 deploy_cmd.add_command(x_dbgconf_cmd)
 
 
-# @click.group(name="dns")
-@click.command(name="dns")
-@click.pass_context
-def dns_cmd(ctx):
-    conf = ctx.obj["conf"]
-    client = ctx.obj["client"]
-
-    dns = iac.DNSManager(client.route53)
-    instance = iac.fetch_instance(client.ec2, conf.instance_name)
-    # dns.create_a_record("a.b.dlm.bky.sh", instance.public_ip_address)
-    dns.fetch_a_record("x.b.dlm.bky.sh")
-    # dns.delete_a_record("a.b.dlm.bky.sh", instance.public_ip_address)
-
-
-
 @click.group(name="dns")
 @click.option("--instance-name", show_envvar=True)
-@click.option("--host-name", show_envvar=True)
+@click.option("--fqdn", show_envvar=True)
 @click.pass_context
-def dns_cmd(ctx, instance_name, host_name):
+def dns_cmd(ctx, instance_name, fqdn):
     conf = ctx.obj["conf"]
 
     conf.instance_name = instance_name or conf.instance_name
-    conf.host_name = host_name or conf.host_name
+    conf.fqdn = fqdn or conf.fqdn
 
     ctx.obj["conf"] = conf
 
@@ -321,19 +298,31 @@ def dns_cmd_create(ctx):
     instance = iac.fetch_instance(client.ec2, conf.instance_name)
 
     dns = iac.DNSManager(client.route53)
-    dns.create_a_record(conf.host_name, instance.public_ip_address)
+    dns.create_a_record(conf.fqdn, instance.public_ip_address)
 
-@click.command(name="fetch")
+@click.command(name="list")
 @click.pass_context
-def dns_cmd_fetch(ctx):
+def dns_cmd_describe(ctx):
     fail_on_debug(ctx)
 
     conf = ctx.obj["conf"]
     client = ctx.obj["client"]
 
     dns = iac.DNSManager(client.route53)
-    record = dns.fetch_a_record(conf.host_name)
+    record = dns.list_a_records(conf.fqdn)
     console(record, to_dict=iac.ResourceRecord.to_dict)
+
+@click.command(name="describe")
+@click.pass_context
+def dns_cmd_list(ctx):
+    fail_on_debug(ctx)
+
+    conf = ctx.obj["conf"]
+    client = ctx.obj["client"]
+
+    dns = iac.DNSManager(client.route53)
+    records = dns.describe_a_record(conf.fqdn)
+    console(records, to_dict=iac.ResourceRecord.to_dict)
 
 
 @click.command(name="delete")
@@ -347,11 +336,12 @@ def dns_cmd_delete(ctx):
     instance = iac.fetch_instance(client.ec2, conf.instance_name)
 
     dns = iac.DNSManager(client.route53)
-    dns.delete_a_record(conf.host_name, instance.public_ip_address)
+    dns.delete_a_record(conf.fqdn, instance.public_ip_address)
 
 
 iac_cmd.add_command(dns_cmd)
 dns_cmd.add_command(dns_cmd_create)
-dns_cmd.add_command(dns_cmd_fetch)
+dns_cmd.add_command(dns_cmd_list)
+dns_cmd.add_command(dns_cmd_describe)
 dns_cmd.add_command(dns_cmd_delete)
 dns_cmd.add_command(x_dbgconf_cmd)

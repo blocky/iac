@@ -286,7 +286,7 @@ def test_dbgconf__sets_from_config(
     assert conf["instance_name"] == "my-instance"
     assert conf["security_group"] == "my-security-group"
     assert conf["instance_kind"] == "nitro"
-    assert conf["host_name"] == "my-host-name"
+    assert conf["fqdn"] == "my-fqdn"
 
     mock_get_credentials.assert_called_once_with(cred_file_name)
 
@@ -516,7 +516,7 @@ def test_dbgconf__deploy_sets_from_environment(_m1, _m2, config_file_name):
 
 def test_dbgconf__dns_sets_from_command_line(config_file_name):
     instance_name = "bob"
-    host_name = "flukeman"
+    fqdn = "flukeman"
 
     result = run_app(
         "--debug",
@@ -525,7 +525,7 @@ def test_dbgconf__dns_sets_from_command_line(config_file_name):
         f"--secret-key=secret",
         "dns",
         f"--instance-name={instance_name}",
-        f"--host-name={host_name}",
+        f"--fqdn={fqdn}",
         "dbgconf",
     )
     assert result.exit_code == 0
@@ -533,11 +533,11 @@ def test_dbgconf__dns_sets_from_command_line(config_file_name):
     conf = json.loads(result.stdout)
     assert conf["debug"]
     assert conf["instance_name"] == instance_name
-    assert conf["host_name"] == host_name
+    assert conf["fqdn"] == fqdn
 
 def test_dbgconf__dns_sets_from_environment(config_file_name):
     instance_name = "bob"
-    host_name = "flukeman"
+    fqdn = "flukeman"
 
     result = run_app(
         "--debug",
@@ -547,11 +547,11 @@ def test_dbgconf__dns_sets_from_environment(config_file_name):
         "dns",
         "dbgconf",
         BKY_IAC_DNS_INSTANCE_NAME=instance_name,
-        BKY_IAC_DNS_HOST_NAME=host_name,
+        BKY_IAC_DNS_FQDN=fqdn,
     )
     assert result.exit_code == 0
 
     conf = json.loads(result.stdout)
     assert conf["debug"]
     assert conf["instance_name"] == instance_name
-    assert conf["host_name"] == host_name
+    assert conf["fqdn"] == fqdn

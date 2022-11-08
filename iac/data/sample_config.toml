@@ -60,11 +60,14 @@ security_group = "string"
 # You MUST change or specify via env var or command line arg
 instance_kind = "string"
 
-# Host name is the name for the dns A record that will point to the instance
+# Fully qualified domain name (fqdn) for the dns A record
+# that will point to the instance.  Fomally, a fqdn has a trailing stop
+# that is often omitted in applications.  As such, here, we omit the trailing
+# stop.
 #
 # It is assumed that the instance and the hosted zone already exsits.
-# We recommed using something in the "bky.sh" zone as many of
-# our AWS security policies restric sequencer devs to that zone.
+# We recommed using something in the "bky.sh" domain as many of
+# our AWS security policies restric sequencer devs to that domain.
 #
 # You MUST change or specify via env var or command line arg
-host_name = "string"
+fqdn = "string"

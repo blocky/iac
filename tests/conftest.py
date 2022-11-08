@@ -34,12 +34,12 @@ class AWSCannedResponses:
         self.other_instance_name = "test-instance2"
 
         self.hosted_zone = iac.dns.HostedZone(
-            fqdn="bky.sh.",
+            fqdn="bky.sh",
             hz_id="Z05346603ECE7KDEFCYS2",
         )
 
         self.resource_record = iac.dns.ResourceRecord(
-            fqdn="a.b.dlm.bky.sh.",
+            fqdn="a.b.dlm.bky.sh",
             ip="'18.205.236.134",
             record_type="A",
         )
@@ -837,12 +837,12 @@ class AWSCannedResponses:
     @property
     def list_hosted_zones_by_name__one_zone(self):
         return {
-            'DNSName': self.hosted_zone.fqdn[:-1],
+            'DNSName': self.hosted_zone.fqdn,
             'HostedZones': [{
                 'CallerReference': '079df300-ed87-4459-ad5d-f9d56f1412bf',
                 'Config': {'Comment': '', 'PrivateZone': False},
                 'Id': f'/hostedzone/{self.hosted_zone.hz_id}',
-                'Name': self.hosted_zone.fqdn,
+                'Name': self.hosted_zone.fqdn + ".",
                 'ResourceRecordSetCount': 6,
             }],
             'IsTruncated': False,
@@ -875,7 +875,7 @@ class AWSCannedResponses:
             'MaxItems': '1',
             'NextRecordName': 'mwittie.bky.sh.',
             'NextRecordType': 'A',
-            'ResourceRecordSets': [{'Name': self.resource_record.fqdn,
+            'ResourceRecordSets': [{'Name': self.resource_record.fqdn + '.',
                 'ResourceRecords': [{'Value': self.resource_record.ip}],
                 'TTL': 300,
                 'Type': self.resource_record.record_type}],
@@ -901,6 +901,51 @@ class AWSCannedResponses:
             'HTTPStatusCode': 200,
             'RequestId': '02cf40ff-c43f-4e42-931a-1398cdd4474e',
             'RetryAttempts': 0}}
+
+    @property
+    def list_resource_record_sets__many_records(self):
+        return {'IsTruncated': False,
+            'MaxItems': '300',
+            'ResourceRecordSets': [
+                {'Name': 'bky.sh.',
+                    'ResourceRecords': [{'Value': 'ns-382.awsdns-47.com.'},
+                    {'Value': 'ns-1037.awsdns-01.org.'},
+                    {'Value': 'ns-866.awsdns-44.net.'},
+                    {'Value': 'ns-1730.awsdns-24.co.uk.'}],
+                    'TTL': 172800,
+                    'Type': 'NS'},
+                {'Name': 'bky.sh.',
+                    'ResourceRecords': [{'Value': 'ns-382.awsdns-47.com. '
+                        'awsdns-hostmaster.amazon.com. '
+                            '1 7200 900 1209600 '
+                            '86400'}],
+                    'TTL': 900,
+                    'Type': 'SOA'},
+                {'Name': 'mwittie.bky.sh.',
+                    'ResourceRecords': [{'Value': '54.163.127.43'}],
+                    'TTL': 300,
+                    'Type': 'A'},
+                {'Name': 'sequencer-dev.bky.sh.',
+                    'ResourceRecords': [{'Value': '3.87.202.142'}],
+                    'TTL': 300,
+                    'Type': 'A'},
+                {'Name': 'sequencer-mwittie.bky.sh.',
+                    'ResourceRecords': [{'Value': '44.200.44.151'}],
+                    'TTL': 300,
+                    'Type': 'A'},
+                {'Name': 'demo.zpr.bky.sh.',
+                    'ResourceRecords': [{'Value': '54.198.161.170'}],
+                    'TTL': 300,
+                    'Type': 'A'}
+            ],
+            'ResponseMetadata': {'HTTPHeaders': {'content-length': '1673',
+                'content-type': 'text/xml',
+                'date': 'Tue, 08 Nov 2022 20:57:49 GMT',
+                'x-amzn-requestid': '8aa6bbdc-b666-4854-a569-fd9d474b6951'},
+            'HTTPStatusCode': 200,
+            'RequestId': '8aa6bbdc-b666-4854-a569-fd9d474b6951',
+            'RetryAttempts': 0}}
+
 
 @pytest.fixture
 def aws_parrot():

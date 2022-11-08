@@ -5,16 +5,29 @@ import botocore.client
 
 from iac.exception import IACError, IACErrorCode
 
-def parse_host(host:str) -> (str, str):
-    tokens = host.split('.')
-    if len(tokens) < 3:
+def parse_domain_name(name:str, require_subdomain=True) -> (str, str):
+    if len(name) > 0 and name[-1] == '.':
         raise IACError(
-            IACErrorCode.INVALID_HOST,
-            f"Invalid host '{host}'",
+            IACErrorCode.INVALID_DOMAIN_NAME,
+            f"Invalid domain name '{name}', trailing stop should be omitted",
         )
 
-    subdomain = '.'.join(tokens[:-2])
+    tokens = name.split('.')
+
+    if len(tokens) < 2:
+        raise IACError(
+            IACErrorCode.INVALID_DOMAIN_NAME,
+            f"Invalid domain name '{name}'",
+        )
+
     domain = '.'.join(tokens[-2:])
+    subdomain = '.'.join(tokens[:-2]) if len(tokens) > 2 else None
+
+    if subdomain is None and require_subdomain:
+        raise IACError(
+            IACErrorCode.INVALID_DOMAIN_NAME,
+            f"Subdomain required but received '{name}'",
+        )
 
     return domain, subdomain
 
@@ -31,7 +44,10 @@ class HostedZone:
     def from_aws(zone: dict) -> HostedZoneSelf:
         # id is in form of /hostedzone/{HostedZoneId}
         hz_id = zone['Id'].replace("/hostedzone/","")
-        fqdn = zone['Name']
+
+        # aws provides fqdn with the trailing stop formalization.  To keep
+        # things consistent in our code, we remove trailing stops
+        fqdn = zone['Name'][:-1]
 
         return HostedZone(hz_id=hz_id, fqdn=fqdn)
 
@@ -46,7 +62,9 @@ class ResourceRecord:
 
     def from_aws(data: dict) -> ResourceRecordSelf:
         return ResourceRecord(
-            fqdn=data['Name'],
+            # aws provides fqdn with the trailing stop formalization.  To keep
+            # things consistent in our code, we remove trailing stops
+            fqdn=data['Name'][:-1],
             ip = data['ResourceRecords'][0]['Value'],
             record_type = data['Type'],
         )
@@ -55,16 +73,13 @@ class ResourceRecord:
     def to_dict(record: ResourceRecordSelf) -> dict:
         return record.__dict__
 
-    def matches(self, host: str) -> bool:
-        return host == self.fqdn or host == self.fqdn[:-1]
-
 
 class DNSManager:
     def __init__(self, client: botocore.client.BaseClient):
         self._client = client
 
-    def _hosted_zone(self, host: str) -> HostedZone:
-        domain, subdomain = parse_host(host)
+    def describe_hosted_zone(self, fqdn: str) -> HostedZone:
+        domain, _ = parse_domain_name(fqdn, require_subdomain=False)
 
         response = self._client.list_hosted_zones_by_name(
             DNSName=domain,
@@ -74,21 +89,28 @@ class DNSManager:
         hosted_zones = response['HostedZones']
         if len(hosted_zones) != 1:
             raise IACError(
-                IACErrorCode.INVALID_HOST,
-                f"Error getting host id from route 53 for '{host}': '{response}'",
+                IACErrorCode.INVALID_DOMAIN_NAME,
+                f"Error getting host id from route 53 for '{fqdn}': '{response}'",
             )
 
-        return HostedZone.from_aws(hosted_zones[0])
+        zone = HostedZone.from_aws(hosted_zones[0])
+        if zone.fqdn != domain:
+            raise IACError(
+                IACErrorCode.DOMAIN_NAME_NOT_FOUND,
+                f"Error getting host id from route 53 for '{fqdn}'",
+            )
+
+        return zone
 
 
-    def change_a_record(self, op: str, host: str, ip: str) -> dict:
+    def change_a_record(self, op: str, fqdn: str, ip: str) -> dict:
         if op not in {"CREATE", "DELETE"}:
             raise IACError(
                 IACErrorCode.INVALID_DNS_A_RECORD_OPERAION,
                 f"Invalid operation on an A record operation '{op}'",
             )
 
-        zone = self._hosted_zone(host)
+        zone = self.describe_hosted_zone(fqdn)
 
         return self._client.change_resource_record_sets(
             HostedZoneId=zone.hz_id,
@@ -96,7 +118,7 @@ class DNSManager:
                 "Changes": [{
                     "Action": op,
                     'ResourceRecordSet': {
-                        'Name': host,
+                        'Name': fqdn,
                         'Type': "A",
                         "TTL": 300,
                         'ResourceRecords': [{ 'Value': ip }],
@@ -106,29 +128,36 @@ class DNSManager:
         )
 
 
-    def create_a_record(self, host: str, ip: str) -> None:
-        self.change_a_record('CREATE', host, ip)
+    def create_a_record(self, fqdn: str, ip: str) -> None:
+        self.change_a_record('CREATE', fqdn, ip)
 
-    def delete_a_record(self, host: str, ip: str) -> None:
-        self.change_a_record('DELETE', host, ip)
+    def delete_a_record(self, fqdn: str, ip: str) -> None:
+        self.change_a_record('DELETE', fqdn, ip)
 
-    def list_a_records(self, host: str, max_items=1000) -> None:
-        zone = self._hosted_zone(host)
+    def list_a_records(self, fqdn: str, max_items=1000) -> [ResourceRecord]:
+        zone = self.describe_hosted_zone(fqdn)
         response = self._client.list_resource_record_sets(
                 HostedZoneId=zone.hz_id,
-                StartRecordName=host,
+                StartRecordName=fqdn,
                 StartRecordType='A',
                 MaxItems=str(max_items),
             )
+
+        if response["IsTruncated"]:
+            raise IACError(
+                IACErrorCode.UNEXPECTED_NUMBER_OF_RECORDS,
+                f"Number of recordes excced {max_items}",
+            )
+
         return list(
             ResourceRecord.from_aws(r) for r in response['ResourceRecordSets']
         )
 
-    def describe_a_record(self, host: str) -> None:
-        zone = self._hosted_zone(host)
+    def describe_a_record(self, fqdn: str) -> ResourceRecord:
+        zone = self.describe_hosted_zone(fqdn)
         response = self._client.list_resource_record_sets(
                 HostedZoneId=zone.hz_id,
-                StartRecordName=host,
+                StartRecordName=fqdn,
                 StartRecordType='A',
                 MaxItems='1',
             )
@@ -137,14 +166,14 @@ class DNSManager:
         if len(record_sets) != 1:
             raise IACError(
                 IACErrorCode.UNEXPECTED_NUMBER_OF_RECORDS,
-                f"Expected 1 record for '{host}' received {len(record_sets)}",
+                f"Expected 1 record for '{fqdn}' received {len(record_sets)}",
             )
 
         record = ResourceRecord.from_aws(record_sets[0])
-        if not record.matches(host):
+        if fqdn != record.fqdn:
             raise IACError(
                 IACErrorCode.DNS_RECORD_NOT_FOUND,
-                f"Did not find DNS Record for '{host}'",
+                f"Did not find DNS Record for '{fqdn}'",
             )
 
         return record
