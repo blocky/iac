@@ -112,7 +112,19 @@ class DNSManager:
     def delete_a_record(self, host: str, ip: str) -> None:
         self.change_a_record('DELETE', host, ip)
 
-    def fetch_a_record(self, host: str) -> None:
+    def list_a_records(self, host: str, max_items=1000) -> None:
+        zone = self._hosted_zone(host)
+        response = self._client.list_resource_record_sets(
+                HostedZoneId=zone.hz_id,
+                StartRecordName=host,
+                StartRecordType='A',
+                MaxItems=str(max_items),
+            )
+        return list(
+            ResourceRecord.from_aws(r) for r in response['ResourceRecordSets']
+        )
+
+    def describe_a_record(self, host: str) -> None:
         zone = self._hosted_zone(host)
         response = self._client.list_resource_record_sets(
                 HostedZoneId=zone.hz_id,
