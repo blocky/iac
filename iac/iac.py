@@ -300,6 +300,7 @@ def dns_cmd_create(ctx):
     dns = iac.DNSManager(client.route53)
     dns.create_a_record(conf.fqdn, instance.public_ip_address)
 
+
 @click.command(name="list")
 @click.pass_context
 def dns_cmd_describe(ctx):
@@ -311,6 +312,7 @@ def dns_cmd_describe(ctx):
     dns = iac.DNSManager(client.route53)
     record = dns.list_a_records(conf.fqdn)
     console(record, to_dict=iac.ResourceRecord.to_dict)
+
 
 @click.command(name="describe")
 @click.pass_context

@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import TypedDict
 
 import boto3
-import botocore.client
 
 DEPLOYMENT_TAG = "Deployment"
 SEQUENCER_TAG = "Sequencer"
@@ -27,7 +26,6 @@ def get_credentials(cred_file: str) -> Credentials:
     return Credentials(row["Access key ID"], row["Secret access key"])
 
 
-
 class AWSClient:
     def __init__(self, creds: Credentials, region: str) -> None:
         self.ec2 = boto3.client(
@@ -42,6 +40,3 @@ class AWSClient:
             aws_access_key_id=creds.access_key,
             aws_secret_access_key=creds.secret_key,
         )
-
-
-

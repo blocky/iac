@@ -45,12 +45,14 @@ class IACRunner:
             proc = run(cmd, log_cmd=self.log_cmd)
             assert proc.returncode == 0
         except subprocess.CalledProcessError as err:
-            msg = "\n".join([
-                "Subprocess failed execution.",
-                f"status {err.returncode}",
-                f"stdout:{err.stdout}",
-                f"stderr: {err.stderr}",
-            ])
+            msg = "\n".join(
+                [
+                    "Subprocess failed execution.",
+                    f"status {err.returncode}",
+                    f"stdout:{err.stdout}",
+                    f"stderr: {err.stderr}",
+                ]
+            )
             pytest.fail(msg)
 
         output = proc.stdout
@@ -59,6 +61,7 @@ class IACRunner:
 
 def test_iac_workflow__happy_path(pyiac):
     # pylint: disable=too-many-statements
+    # pylint: disable=too-many-locals
     key_name = "bky-iac-live-test-key"
     instance_name = "bky-iac-live-test-instance"
     fqdn = "bky-iac-live-test-host.bky.sh"

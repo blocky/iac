@@ -30,7 +30,4 @@ from .deploy import (
     RemoteCMDRunner,
     run_result_to_dict,
 )
-from .dns import (
-    DNSManager,
-    ResourceRecord
-)
+from .dns import DNSManager, ResourceRecord

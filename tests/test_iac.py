@@ -521,8 +521,8 @@ def test_dbgconf__dns_sets_from_command_line(config_file_name):
     result = run_app(
         "--debug",
         f"--config-file={config_file_name}",
-        f"--access-key=access",
-        f"--secret-key=secret",
+        "--access-key=access",
+        "--secret-key=secret",
         "dns",
         f"--instance-name={instance_name}",
         f"--fqdn={fqdn}",
@@ -535,6 +535,7 @@ def test_dbgconf__dns_sets_from_command_line(config_file_name):
     assert conf["instance_name"] == instance_name
     assert conf["fqdn"] == fqdn
 
+
 def test_dbgconf__dns_sets_from_environment(config_file_name):
     instance_name = "bob"
     fqdn = "flukeman"
@@ -542,8 +543,8 @@ def test_dbgconf__dns_sets_from_environment(config_file_name):
     result = run_app(
         "--debug",
         f"--config-file={config_file_name}",
-        f"--access-key=access",
-        f"--secret-key=secret",
+        "--access-key=access",
+        "--secret-key=secret",
         "dns",
         "dbgconf",
         BKY_IAC_DNS_INSTANCE_NAME=instance_name,

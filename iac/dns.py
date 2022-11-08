@@ -5,14 +5,15 @@ import botocore.client
 
 from iac.exception import IACError, IACErrorCode
 
-def parse_domain_name(name:str, require_subdomain=True) -> (str, str):
-    if len(name) > 0 and name[-1] == '.':
+
+def parse_domain_name(name: str, require_subdomain=True) -> (str, str):
+    if len(name) > 0 and name[-1] == ".":
         raise IACError(
             IACErrorCode.INVALID_DOMAIN_NAME,
             f"Invalid domain name '{name}', trailing stop should be omitted",
         )
 
-    tokens = name.split('.')
+    tokens = name.split(".")
 
     if len(tokens) < 2:
         raise IACError(
@@ -20,8 +21,8 @@ def parse_domain_name(name:str, require_subdomain=True) -> (str, str):
             f"Invalid domain name '{name}'",
         )
 
-    domain = '.'.join(tokens[-2:])
-    subdomain = '.'.join(tokens[:-2]) if len(tokens) > 2 else None
+    domain = ".".join(tokens[-2:])
+    subdomain = ".".join(tokens[:-2]) if len(tokens) > 2 else None
 
     if subdomain is None and require_subdomain:
         raise IACError(
@@ -32,8 +33,8 @@ def parse_domain_name(name:str, require_subdomain=True) -> (str, str):
     return domain, subdomain
 
 
-
 HostedZoneSelf = TypeVar("HostedZoneSelf", bound="HostedZone")
+
 
 @dataclass(frozen=True)
 class HostedZone:
@@ -43,16 +44,17 @@ class HostedZone:
     @staticmethod
     def from_aws(zone: dict) -> HostedZoneSelf:
         # id is in form of /hostedzone/{HostedZoneId}
-        hz_id = zone['Id'].replace("/hostedzone/","")
+        hz_id = zone["Id"].replace("/hostedzone/", "")
 
         # aws provides fqdn with the trailing stop formalization.  To keep
         # things consistent in our code, we remove trailing stops
-        fqdn = zone['Name'][:-1]
+        fqdn = zone["Name"][:-1]
 
         return HostedZone(hz_id=hz_id, fqdn=fqdn)
 
 
 ResourceRecordSelf = TypeVar("ResourceRecordSelf", bound="ResourceRecord")
+
 
 @dataclass(frozen=True)
 class ResourceRecord:
@@ -60,13 +62,14 @@ class ResourceRecord:
     ip: str
     record_type: str
 
+    @staticmethod
     def from_aws(data: dict) -> ResourceRecordSelf:
         return ResourceRecord(
             # aws provides fqdn with the trailing stop formalization.  To keep
             # things consistent in our code, we remove trailing stops
-            fqdn=data['Name'][:-1],
-            ip = data['ResourceRecords'][0]['Value'],
-            record_type = data['Type'],
+            fqdn=data["Name"][:-1],
+            ip=data["ResourceRecords"][0]["Value"],
+            record_type=data["Type"],
         )
 
     @staticmethod
@@ -83,10 +86,10 @@ class DNSManager:
 
         response = self._client.list_hosted_zones_by_name(
             DNSName=domain,
-            MaxItems='1',
+            MaxItems="1",
         )
 
-        hosted_zones = response['HostedZones']
+        hosted_zones = response["HostedZones"]
         if len(hosted_zones) != 1:
             raise IACError(
                 IACErrorCode.INVALID_DOMAIN_NAME,
@@ -102,12 +105,11 @@ class DNSManager:
 
         return zone
 
-
-    def change_a_record(self, op: str, fqdn: str, ip: str) -> dict:
-        if op not in {"CREATE", "DELETE"}:
+    def change_a_record(self, operation: str, fqdn: str, ip_address: str) -> dict:
+        if operation not in {"CREATE", "DELETE"}:
             raise IACError(
                 IACErrorCode.INVALID_DNS_A_RECORD_OPERAION,
-                f"Invalid operation on an A record operation '{op}'",
+                f"Invalid operation on an A record operation '{operation}'",
             )
 
         zone = self.describe_hosted_zone(fqdn)
@@ -115,33 +117,34 @@ class DNSManager:
         return self._client.change_resource_record_sets(
             HostedZoneId=zone.hz_id,
             ChangeBatch={
-                "Changes": [{
-                    "Action": op,
-                    'ResourceRecordSet': {
-                        'Name': fqdn,
-                        'Type': "A",
-                        "TTL": 300,
-                        'ResourceRecords': [{ 'Value': ip }],
+                "Changes": [
+                    {
+                        "Action": operation,
+                        "ResourceRecordSet": {
+                            "Name": fqdn,
+                            "Type": "A",
+                            "TTL": 300,
+                            "ResourceRecords": [{"Value": ip_address}],
+                        },
                     }
-                }]
-            }
+                ]
+            },
         )
 
+    def create_a_record(self, fqdn: str, ip_address: str) -> None:
+        self.change_a_record("CREATE", fqdn, ip_address)
 
-    def create_a_record(self, fqdn: str, ip: str) -> None:
-        self.change_a_record('CREATE', fqdn, ip)
-
-    def delete_a_record(self, fqdn: str, ip: str) -> None:
-        self.change_a_record('DELETE', fqdn, ip)
+    def delete_a_record(self, fqdn: str, ip_address: str) -> None:
+        self.change_a_record("DELETE", fqdn, ip_address)
 
     def list_a_records(self, fqdn: str, max_items=1000) -> [ResourceRecord]:
         zone = self.describe_hosted_zone(fqdn)
         response = self._client.list_resource_record_sets(
-                HostedZoneId=zone.hz_id,
-                StartRecordName=fqdn,
-                StartRecordType='A',
-                MaxItems=str(max_items),
-            )
+            HostedZoneId=zone.hz_id,
+            StartRecordName=fqdn,
+            StartRecordType="A",
+            MaxItems=str(max_items),
+        )
 
         if response["IsTruncated"]:
             raise IACError(
@@ -149,20 +152,18 @@ class DNSManager:
                 f"Number of recordes excced {max_items}",
             )
 
-        return list(
-            ResourceRecord.from_aws(r) for r in response['ResourceRecordSets']
-        )
+        return list(ResourceRecord.from_aws(r) for r in response["ResourceRecordSets"])
 
     def describe_a_record(self, fqdn: str) -> ResourceRecord:
         zone = self.describe_hosted_zone(fqdn)
         response = self._client.list_resource_record_sets(
-                HostedZoneId=zone.hz_id,
-                StartRecordName=fqdn,
-                StartRecordType='A',
-                MaxItems='1',
-            )
+            HostedZoneId=zone.hz_id,
+            StartRecordName=fqdn,
+            StartRecordType="A",
+            MaxItems="1",
+        )
 
-        record_sets = response['ResourceRecordSets']
+        record_sets = response["ResourceRecordSets"]
         if len(record_sets) != 1:
             raise IACError(
                 IACErrorCode.UNEXPECTED_NUMBER_OF_RECORDS,
