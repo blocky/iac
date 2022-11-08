@@ -134,8 +134,10 @@ class DNSManager:
     def create_a_record(self, fqdn: str, ip_address: str) -> None:
         self.change_a_record("CREATE", fqdn, ip_address)
 
-    def delete_a_record(self, fqdn: str, ip_address: str) -> None:
-        self.change_a_record("DELETE", fqdn, ip_address)
+    def delete_a_record(self, fqdn: str) -> None:
+        record = self.describe_a_record(fqdn)
+
+        self.change_a_record("DELETE", fqdn, record.ip)
 
     def list_a_records(self, fqdn: str, max_items=1000) -> [ResourceRecord]:
         zone = self.describe_hosted_zone(fqdn)

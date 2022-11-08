@@ -335,10 +335,8 @@ def dns_cmd_delete(ctx):
     conf = ctx.obj["conf"]
     client = ctx.obj["client"]
 
-    instance = iac.fetch_instance(client.ec2, conf.instance_name)
-
     dns = iac.DNSManager(client.route53)
-    dns.delete_a_record(conf.fqdn, instance.public_ip_address)
+    dns.delete_a_record(conf.fqdn)
 
 
 iac_cmd.add_command(dns_cmd)
