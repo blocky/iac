@@ -1,11 +1,11 @@
 name: E2E Tests
 
-on:
-  push:
-    branches:
-      - 'main'
-  pull_request:
-    types: [opened, submitted]
+on: push
+  # push:
+  #   branches:
+  #     - 'main'
+  # pull_request:
+  #   types: [opened, submitted]
 
 jobs:
   job1:
