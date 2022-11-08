@@ -31,9 +31,18 @@ def test_hosted_zone__from_aws__happy_path(aws_parrot):
 
 
 def test_resource_record__from_aws__happy_path(aws_parrot):
-    response = aws_parrot.list_resource_record_sets
+    response = aws_parrot.list_resource_record_sets__one_record
     zone = iac.dns.ResourceRecord.from_aws(response["ResourceRecordSets"][0])
     assert zone == aws_parrot.resource_record
+
+
+@mark.parametrize("host, matches", [
+    ("a.b.dlm.bky.sh.", True),
+    ("a.b.dlm.bky.sh", True),
+    ("x.y.z", False),
+])
+def test_resource_record__matches(host, matches, aws_parrot):
+    assert aws_parrot.resource_record.matches(host) == matches
 
 
 def test_dns_manager__change_a_record__happy_path(aws_parrot):
@@ -95,6 +104,17 @@ def test_dns_manager__fetch_a_record__happy_path(aws_parrot):
 
     assert aws_parrot.resource_record == resource_record
 
+
+def test_dns_manager__fetch_a_record__happy_path_no_trailing_stop(aws_parrot):
+    dns = Mock()
+    dns.list_hosted_zones_by_name.return_value = \
+        aws_parrot.list_hosted_zones_by_name__one_zone
+    dns.list_resource_record_sets.return_value = \
+        aws_parrot.list_resource_record_sets__one_record
+
+    resource_record = iac.DNSManager(dns).fetch_a_record("a.b.dlm.bky.sh")
+
+    assert aws_parrot.resource_record == resource_record
 
 def test_dns_manager__fetch_a_record__non_matching_record(aws_parrot):
     dns = Mock()

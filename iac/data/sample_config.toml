@@ -56,6 +56,15 @@ security_group = "string"
 # - 'nitro' - creates a very large instance with nitro.
 #       The nitro profile is intended for production or developing on a system
 #       that has a real enclave.
+#
 # You MUST change or specify via env var or command line arg
 instance_kind = "string"
 
+# Host name is the name for the dns A record that will point to the instance
+#
+# It is assumed that the instance and the hosted zone already exsits.
+# We recommed using something in the "bky.sh" zone as many of
+# our AWS security policies restric sequencer devs to that zone.
+#
+# You MUST change or specify via env var or command line arg
+host_name = "string"

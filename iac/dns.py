@@ -51,6 +51,13 @@ class ResourceRecord:
             record_type = data['Type'],
         )
 
+    @staticmethod
+    def to_dict(record: ResourceRecordSelf) -> dict:
+        return record.__dict__
+
+    def matches(self, host: str) -> bool:
+        return host == self.fqdn or host == self.fqdn[:-1]
+
 
 class DNSManager:
     def __init__(self, client: botocore.client.BaseClient):
@@ -106,8 +113,6 @@ class DNSManager:
         self.change_a_record('DELETE', host, ip)
 
     def fetch_a_record(self, host: str) -> None:
-        # TODO: test this, it may work, but only under some pretty good
-        # assumptions
         zone = self._hosted_zone(host)
         response = self._client.list_resource_record_sets(
                 HostedZoneId=zone.hz_id,
@@ -124,7 +129,7 @@ class DNSManager:
             )
 
         record = ResourceRecord.from_aws(record_sets[0])
-        if host != record.fqdn:
+        if not record.matches(host):
             raise IACError(
                 IACErrorCode.DNS_RECORD_NOT_FOUND,
                 f"Did not find DNS Record for '{host}'",

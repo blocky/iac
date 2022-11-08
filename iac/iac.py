@@ -295,8 +295,63 @@ def dns_cmd(ctx):
     dns.fetch_a_record("x.b.dlm.bky.sh")
     # dns.delete_a_record("a.b.dlm.bky.sh", instance.public_ip_address)
 
+
+
+@click.group(name="dns")
+@click.option("--instance-name", show_envvar=True)
+@click.option("--host-name", show_envvar=True)
+@click.pass_context
+def dns_cmd(ctx, instance_name, host_name):
+    conf = ctx.obj["conf"]
+
+    conf.instance_name = instance_name or conf.instance_name
+    conf.host_name = host_name or conf.host_name
+
+    ctx.obj["conf"] = conf
+
+
+@click.command(name="create")
+@click.pass_context
+def dns_cmd_create(ctx):
+    fail_on_debug(ctx)
+
+    conf = ctx.obj["conf"]
+    client = ctx.obj["client"]
+
+    instance = iac.fetch_instance(client.ec2, conf.instance_name)
+
+    dns = iac.DNSManager(client.route53)
+    dns.create_a_record(conf.host_name, instance.public_ip_address)
+
+@click.command(name="fetch")
+@click.pass_context
+def dns_cmd_fetch(ctx):
+    fail_on_debug(ctx)
+
+    conf = ctx.obj["conf"]
+    client = ctx.obj["client"]
+
+    dns = iac.DNSManager(client.route53)
+    record = dns.fetch_a_record(conf.host_name)
+    console(record, to_dict=iac.ResourceRecord.to_dict)
+
+
+@click.command(name="delete")
+@click.pass_context
+def dns_cmd_delete(ctx):
+    fail_on_debug(ctx)
+
+    conf = ctx.obj["conf"]
+    client = ctx.obj["client"]
+
+    instance = iac.fetch_instance(client.ec2, conf.instance_name)
+
+    dns = iac.DNSManager(client.route53)
+    dns.delete_a_record(conf.host_name, instance.public_ip_address)
+
+
 iac_cmd.add_command(dns_cmd)
-
-
-
-
+dns_cmd.add_command(dns_cmd_create)
+dns_cmd.add_command(dns_cmd_fetch)
+dns_cmd.add_command(dns_cmd_delete)
+dns_cmd.add_command(x_dbgconf_cmd)

@@ -31,5 +31,6 @@ from .deploy import (
     run_result_to_dict,
 )
 from .dns import (
-    DNSManager
+    DNSManager,
+    ResourceRecord
 )

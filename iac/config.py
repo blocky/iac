@@ -20,6 +20,7 @@ class Config:
     instance_name: str = None
     instance_kind: str = None
     security_group: str = None
+    host_name: str = None
 
     @classmethod
     def from_toml(cls, context: str, user: str) -> ConfigSelf:
