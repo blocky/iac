@@ -18,9 +18,10 @@ def test_instace_kind__from_str():
     assert "Cannot create instance kind from" in str(e.value)
 
 
-@mark.parametrize("field", ["Tags", "InstanceId", "KeyName", "PublicDnsName"])
+@mark.parametrize("field", ["Tags", "InstanceId", "KeyName"])
 def test_intance__from_aws_instance__error_in_structure(field, aws_parrot):
-    inst = aws_parrot.describe_instances__one_instance["Reservations"][0]["Instances"][0]
+    resp = aws_parrot.describe_instances__one_instance
+    inst = resp["Reservations"][0]["Instances"][0]
     del inst[field]
     with raises(KeyError):
         iac.Instance.from_aws_instance(inst)
@@ -295,7 +296,7 @@ def test_terminate_instance__happy_path(
     ec2 = Mock()
     ec2.terminate_instances.return_value = aws_parrot.terminate_instances_result(state)
 
-    want = iac.Instance(name="a", id="a_id")
+    want = iac.Instance(name="a", state="running", id="a_id")
     mock_describe_instances.return_value = [want]
 
     got = iac.terminate_instance(ec2, want.name)
@@ -341,7 +342,8 @@ def test_terminate_instance__name_collision(mock_describe_instances):
     ec2 = Mock()
 
     instance_name = "a"
-    mock_describe_instances.return_value = [iac.Instance(instance_name)] * 2
+    instance = iac.Instance(name=instance_name, state="running")
+    mock_describe_instances.return_value = [instance] * 2
 
     with raises(iac.IACInstanceError) as exc_info:
         iac.terminate_instance(ec2, instance_name)
@@ -357,7 +359,7 @@ def test_terminate_instance__cloud_terminate_exception(mock_describe_instances):
     ec2 = Mock()
     ec2.terminate_instances.side_effect = want
 
-    instance = iac.Instance(name="a", id="a_id")
+    instance = iac.Instance(name="a", state="running", id="a_id")
     mock_describe_instances.return_value = [instance]
 
     with raises(type(want)) as exc_info:
@@ -373,7 +375,7 @@ def test_terminate_instance__still_running(mock_describe_instances, aws_parrot):
     ec2 = Mock()
     ec2.terminate_instances.return_value = aws_parrot.terminate_instances_result("running")
 
-    instance = iac.Instance(name="a", id="a_id")
+    instance = iac.Instance(name="a", state="running", id="a_id")
     mock_describe_instances.return_value = [instance]
 
     with raises(iac.IACInstanceError) as exc_info:
@@ -388,7 +390,7 @@ def test_terminate_instance__still_running(mock_describe_instances, aws_parrot):
 def test_list_instances__happy_path(mock_describe_instances):
     ec2 = Mock()
 
-    want = [iac.Instance("a"), iac.Instance("b")]
+    want = [iac.Instance("a", "running"), iac.Instance("b", "running")]
     mock_describe_instances.return_value = want
 
     got = iac.list_instances(ec2)
@@ -401,7 +403,7 @@ def test_list_instances__happy_path(mock_describe_instances):
 def test_fetch_instance__happy_path(mock_describe_instances):
     ec2 = Mock()
 
-    want = iac.Instance("a")
+    want = iac.Instance(name="a", state="running")
     mock_describe_instances.return_value = [want]
 
     got = iac.fetch_instance(ec2, want.name)
@@ -430,10 +432,55 @@ def test_fetch_instance__many_instances(mock_describe_instances):
     ec2 = Mock()
 
     instance_name = "instance_name"
-    mock_describe_instances.return_value = [iac.Instance(instance_name)] * 3
+    instance = iac.Instance(name=instance_name, state="running")
+    mock_describe_instances.return_value = [instance] * 3
 
     with raises(iac.IACInstanceError) as exc_info:
         iac.fetch_instance(ec2, instance_name)
 
     assert exc_info.value.error_code == iac.IACErrorCode.INSTANCE_NAME_COLLISION
     mock_describe_instances.assert_called_once_with(ec2, instance_name)
+
+
+def test_instance_running_barrier_wait_instance_ok_from_start():
+    ec2 = Mock()
+
+    running = iac.Instance(name="inst", state="running")
+    got = iac.instance.InstanceRunningBarrier(ec2, 0, 2).wait(running)
+
+    assert got == running
+    ec2.assert_not_called()
+
+
+@patch("iac.instance.fetch_instance")
+def test_instance_running_barrier_wait_instance_ok_after_retry(
+    mock_fetch_instance,
+):
+    ec2 = Mock()
+
+    pending = iac.Instance(name="inst", state="pending")
+    running = iac.Instance(name="inst", state="running")
+    mock_fetch_instance.side_effect = [pending, running]
+
+    got = iac.instance.InstanceRunningBarrier(ec2, 0, 2).wait(pending)
+
+    assert got == running
+    assert mock_fetch_instance.call_count == 2
+    ec2.assert_not_called()
+
+
+@patch("iac.instance.fetch_instance")
+def test_instance_running_barrier_wait_instace_stuck_pending(
+    mock_fetch_instance,
+):
+    ec2 = Mock()
+
+    pending = iac.Instance(name="inst", state="pending")
+    mock_fetch_instance.side_effect = [pending, pending]
+
+    with raises(iac.IACInstanceError) as exc_info:
+        iac.instance.InstanceRunningBarrier(ec2, 0, 2).wait(pending)
+
+    assert exc_info.value.error_code == iac.IACErrorCode.INSTANCE_NOT_RUNNING
+    assert mock_fetch_instance.call_count == 2
+    ec2.assert_not_called()

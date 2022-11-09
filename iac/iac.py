@@ -171,12 +171,14 @@ def instance_create_cmd(ctx):
     fail_on_debug(ctx)
 
     conf = ctx.obj["conf"]
+    ec2 = ctx.obj["ec2"]
     instance = iac.create_instance(
-        ctx.obj["ec2"],
+        ec2,
         iac.InstanceKind.from_str(conf.instance_kind),
         conf.instance_name,
         conf.key_name,
         conf.security_group,
+        iac.instance.InstanceRunningBarrier(ec2),
     )
     console(instance, to_dict=iac.Instance.to_dict)
 
