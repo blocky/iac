@@ -824,3 +824,9 @@ def config_file_name():
 def config_file_with_no_creds_name():
     file_name = "config_with_no_creds.toml"
     return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
+
+
+@pytest.fixture
+def config_file_invalid():
+    file_name = "config_invalid.toml"
+    return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
