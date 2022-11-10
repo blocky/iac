@@ -43,7 +43,6 @@ class IACRunner:
         try:
             proc = run(cmd, log_cmd=self.log_cmd)
             assert proc.returncode == 0
-            assert proc.stderr == ""
         except subprocess.CalledProcessError as err:
             msg = "\n".join(
                 [

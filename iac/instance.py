@@ -165,14 +165,16 @@ class InstanceRunningBarrier(Barrier):
         return inst.state == "running"
 
     def _warn(self, msg: str, out=sys.stderr) -> None:
-        out.write(f"**Warning** {msg}")
+        out.write(f"**Warning** {msg}\n")
 
     def wait(self, inst: Instance) -> Instance:
         running_inst = inst if self._is_running(inst) else None
 
         remaining_attempts = self.retry_count
         while not running_inst and remaining_attempts > 0:
-            self._warn("Instance is pending, checking again")
+            n = self.retry_count
+            k = n - remaining_attempts + 1
+            self._warn(f"Instance is pending, checking again {k}/{n}")
             time.sleep(self.sleep_time)
             inst = fetch_instance(self.ec2, inst.name)
             running_inst = inst if self._is_running(inst) else None
