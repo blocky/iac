@@ -47,7 +47,6 @@ class AWSCannedResponses:
 
     @property
     def instance(self):
-        # resp = self.describe_instances__one_instance
         resp = self.describe_instances__one_instance
         inst = resp["Reservations"][0]["Instances"][0]
         return iac.Instance.from_aws_instance(inst)
