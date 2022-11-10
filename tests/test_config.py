@@ -36,6 +36,11 @@ def test_config__from_toml__no_context_with_user_file_not_found():
     assert config == iac.Config()
 
 
+def test_config__from_toml__bad_format(config_file_invalid):
+    config = iac.Config.from_toml(None, config_file_invalid)
+    assert config == iac.Config()
+
+
 def test_config__from_kwargs():
     region = "mars"
     access_key = "abc"
