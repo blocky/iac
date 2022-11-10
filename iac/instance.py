@@ -172,7 +172,7 @@ class InstanceRunningBarrier(Barrier):
 
         remaining_attempts = self.retry_count
         while not running_inst and remaining_attempts > 0:
-            n = self.retry_count
+            n = self.retry_count  # pylint: disable = invalid-name
             k = n - remaining_attempts + 1
             self._warn(f"Instance is pending, checking again {k}/{n}")
             time.sleep(self.sleep_time)
