@@ -40,10 +40,10 @@ class IACRunner:
 
     def __call__(self, *args, load_output=True) -> dict:
         cmd = self.iac_cmd + " " + " ".join(args)
-
         try:
             proc = run(cmd, log_cmd=self.log_cmd)
             assert proc.returncode == 0
+            assert proc.stderr == ""
         except subprocess.CalledProcessError as err:
             msg = "\n".join(
                 [
