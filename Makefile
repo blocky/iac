@@ -1,5 +1,5 @@
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+BLUE=\033[0;34m
+NC=\033[0m # No Color
 pyiac ?= python -m iac
 
 run:

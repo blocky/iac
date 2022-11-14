@@ -38,10 +38,10 @@ def run_app(*args, **kwargs):
 
 
 @patch("iac.get_credentials")
-@patch("iac.make_ec2_client")
+@patch("iac.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "config", "deploy"])
 def test_setup_no_keys_or_creds(
-    mock_make_ec2_client,
+    mock_aws_client_init,
     mock_get_credentials,
     subcommand,
     config_file_with_no_creds_name,
@@ -54,14 +54,14 @@ def test_setup_no_keys_or_creds(
     assert result.exit_code == 0
 
     mock_get_credentials.assert_not_called()
-    mock_make_ec2_client.assert_not_called()
+    mock_aws_client_init.assert_not_called()
 
 
 @patch("iac.get_credentials")
-@patch("iac.make_ec2_client")
+@patch("iac.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
-def test_setup_make_ec2_client_uses_creds_file_when_missing_both_keys(
-    mock_make_ec2_client,
+def test_setup_aws_client_uses_creds_file_when_missing_both_keys(
+    mock_aws_client_init,
     mock_get_credentials,
     subcommand,
     config_file_name,
@@ -69,8 +69,8 @@ def test_setup_make_ec2_client_uses_creds_file_when_missing_both_keys(
     creds = Mock()
     mock_get_credentials.return_value = creds
 
-    ec2 = Mock()
-    mock_make_ec2_client.return_value = ec2
+    client = Mock()
+    mock_aws_client_init.return_value = client
 
     result = run_app(
         f"--config-file={config_file_name}",
@@ -80,14 +80,14 @@ def test_setup_make_ec2_client_uses_creds_file_when_missing_both_keys(
     assert result.exit_code == 0
 
     mock_get_credentials.assert_called_once_with("my-cred-file.csv")
-    mock_make_ec2_client.assert_called_once_with(creds, ANY)
+    mock_aws_client_init.assert_called_once_with(creds, ANY)
 
 
 @patch("iac.get_credentials")
-@patch("iac.make_ec2_client")
+@patch("iac.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
-def test_setup_make_ec2_client_uses_creds_file_when_missing_secret_key(
-    mock_make_ec2_client,
+def test_setup_aws_client_uses_creds_file_when_missing_secret_key(
+    mock_aws_client_init,
     mock_get_credentials,
     subcommand,
     config_file_name,
@@ -95,8 +95,8 @@ def test_setup_make_ec2_client_uses_creds_file_when_missing_secret_key(
     creds = Mock()
     mock_get_credentials.return_value = creds
 
-    ec2 = Mock()
-    mock_make_ec2_client.return_value = ec2
+    client = Mock()
+    mock_aws_client_init.return_value = client
 
     result = run_app(
         f"--config-file={config_file_name}",
@@ -107,14 +107,14 @@ def test_setup_make_ec2_client_uses_creds_file_when_missing_secret_key(
     assert result.exit_code == 0
 
     mock_get_credentials.assert_called_once_with("my-cred-file.csv")
-    mock_make_ec2_client.assert_called_once_with(creds, ANY)
+    mock_aws_client_init.assert_called_once_with(creds, ANY)
 
 
 @patch("iac.get_credentials")
-@patch("iac.make_ec2_client")
+@patch("iac.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
-def test_setup_make_ec2_client_uses_creds_file_when_missing_access_key(
-    mock_make_ec2_client,
+def test_setup_aws_client_uses_creds_file_when_missing_access_key(
+    mock_aws_client_init,
     mock_get_credentials,
     subcommand,
     config_file_name,
@@ -122,8 +122,8 @@ def test_setup_make_ec2_client_uses_creds_file_when_missing_access_key(
     creds = Mock()
     mock_get_credentials.return_value = creds
 
-    ec2 = Mock()
-    mock_make_ec2_client.return_value = ec2
+    client = Mock()
+    mock_aws_client_init.return_value = client
 
     result = run_app(
         f"--config-file={config_file_name}",
@@ -134,14 +134,14 @@ def test_setup_make_ec2_client_uses_creds_file_when_missing_access_key(
     assert result.exit_code == 0
 
     mock_get_credentials.assert_called_once_with("my-cred-file.csv")
-    mock_make_ec2_client.assert_called_once_with(creds, ANY)
+    mock_aws_client_init.assert_called_once_with(creds, ANY)
 
 
 @patch("iac.get_credentials")
-@patch("iac.make_ec2_client")
+@patch("iac.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
-def test_setup_make_ec2_client_uses_keys_when_both_keys_present(
-    mock_make_ec2_client,
+def test_setup_aws_client_uses_keys_when_both_keys_present(
+    mock_aws_client_init,
     mock_get_credentials,
     subcommand,
     config_file_name,
@@ -151,8 +151,8 @@ def test_setup_make_ec2_client_uses_keys_when_both_keys_present(
 
     creds = iac.aws.Credentials(access_key, secret_key)
 
-    ec2 = Mock()
-    mock_make_ec2_client.return_value = ec2
+    client = Mock()
+    mock_aws_client_init.return_value = client
 
     result = run_app(
         f"--config-file={config_file_name}",
@@ -164,7 +164,7 @@ def test_setup_make_ec2_client_uses_keys_when_both_keys_present(
     assert result.exit_code == 0
 
     mock_get_credentials.assert_not_called()
-    mock_make_ec2_client.assert_called_once_with(creds, ANY)
+    mock_aws_client_init.assert_called_once_with(creds, ANY)
 
 
 @patch("iac.fetch_instance")
@@ -286,6 +286,7 @@ def test_dbgconf__sets_from_config(
     assert conf["instance_name"] == "my-instance"
     assert conf["security_group"] == "my-security-group"
     assert conf["instance_kind"] == "nitro"
+    assert conf["fqdn"] == "my-fqdn"
 
     mock_get_credentials.assert_called_once_with(cred_file_name)
 
@@ -511,3 +512,47 @@ def test_dbgconf__deploy_sets_from_environment(_m1, _m2, config_file_name):
     assert conf["secrets_folder"] == secrets_folder
     assert conf["instance_name"] == instance_name
     assert conf["security_group"] == "my-security-group"
+
+
+def test_dbgconf__dns_sets_from_command_line(config_file_name):
+    instance_name = "bob"
+    fqdn = "flukeman"
+
+    result = run_app(
+        "--debug",
+        f"--config-file={config_file_name}",
+        "--access-key=access",
+        "--secret-key=secret",
+        "dns",
+        f"--instance-name={instance_name}",
+        f"--fqdn={fqdn}",
+        "dbgconf",
+    )
+    assert result.exit_code == 0
+
+    conf = json.loads(result.stdout)
+    assert conf["debug"]
+    assert conf["instance_name"] == instance_name
+    assert conf["fqdn"] == fqdn
+
+
+def test_dbgconf__dns_sets_from_environment(config_file_name):
+    instance_name = "bob"
+    fqdn = "flukeman"
+
+    result = run_app(
+        "--debug",
+        f"--config-file={config_file_name}",
+        "--access-key=access",
+        "--secret-key=secret",
+        "dns",
+        "dbgconf",
+        BKY_IAC_DNS_INSTANCE_NAME=instance_name,
+        BKY_IAC_DNS_FQDN=fqdn,
+    )
+    assert result.exit_code == 0
+
+    conf = json.loads(result.stdout)
+    assert conf["debug"]
+    assert conf["instance_name"] == instance_name
+    assert conf["fqdn"] == fqdn

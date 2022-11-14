@@ -6,6 +6,8 @@ import subprocess
 import tempfile
 import time
 
+import pytest
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -38,9 +40,19 @@ class IACRunner:
 
     def __call__(self, *args, load_output=True) -> dict:
         cmd = self.iac_cmd + " " + " ".join(args)
-
-        proc = run(cmd, log_cmd=self.log_cmd)
-        assert proc.returncode == 0
+        try:
+            proc = run(cmd, log_cmd=self.log_cmd)
+            assert proc.returncode == 0
+        except subprocess.CalledProcessError as err:
+            msg = "\n".join(
+                [
+                    "Subprocess failed execution.",
+                    f"status {err.returncode}",
+                    f"stdout:{err.stdout}",
+                    f"stderr: {err.stderr}",
+                ]
+            )
+            pytest.fail(msg)
 
         output = proc.stdout
         return json.loads(output) if output and load_output else {}
@@ -48,14 +60,17 @@ class IACRunner:
 
 def test_iac_workflow__happy_path(pyiac):
     # pylint: disable=too-many-statements
+    # pylint: disable=too-many-locals
     key_name = "bky-iac-live-test-key"
     instance_name = "bky-iac-live-test-instance"
+    fqdn = "bky-iac-live-test-host.bky.sh"
 
     iac = IACRunner(pyiac)
 
     info("Check help commands")
     iac("deploy copy --help", load_output=False)
     iac("deploy run --help", load_output=False)
+    iac("dns create --help", load_output=False)
 
     info("Checking initial state of keys")
     keys = iac("key list")
@@ -97,8 +112,28 @@ def test_iac_workflow__happy_path(pyiac):
     instances = iac("instance list")
     assert instance_name in {i["name"] for i in instances}
 
+    info("Checking initial state of DNS")
+    records = iac(f"dns --fqdn={fqdn} list")
+    initial_records = {r["fqdn"] for r in records}
+
+    if fqdn in initial_records:
+        warn(f"Record {fqdn} was found, attempting to delete")
+        iac(f"dns --instance-name={instance_name} --fqdn={fqdn} delete")
+
+        records = iac(f"dns --fqdn={fqdn} list")
+        initial_records = {r["fqdn"] for r in records}
+
+    assert fqdn not in initial_records
+
+    info("Create DNS record")
+    iac(f"dns --instance-name={instance_name} --fqdn={fqdn} create")
+
+    info("Checking DNS record creation")
+    record = iac(f"dns --fqdn={fqdn} describe")
+    assert fqdn == record["fqdn"]
+
     info("Giving the system some time to startup")
-    time.sleep(10)
+    time.sleep(30)
 
     with tempfile.NamedTemporaryFile(prefix="bky-iac-") as tmp:
         junk = "".join(random.choices(string.ascii_lowercase, k=5))
@@ -118,6 +153,13 @@ def test_iac_workflow__happy_path(pyiac):
             f"run 'cat {path_on_remote}'",
         )
         assert remote_result["stdout"] == data
+
+    info("Delete DNS record")
+    iac(f"dns --instance-name={instance_name} --fqdn={fqdn} delete")
+
+    info("Checking DNS deleted")
+    records = iac(f"dns --fqdn={fqdn} list")
+    assert fqdn not in records
 
     info("Terminate instance")
     iac(f"instance --key-name={key_name} --instance-name={instance_name} terminate")

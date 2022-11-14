@@ -58,6 +58,7 @@ addopts = """
     --ignore=./tests/live
     -W ignore::DeprecationWarning:invoke.loader
 """
+
 filterwarnings = "ignore:Importing 'itsdangerous.json':DeprecationWarning"
 log_cli = 1
 log_cli_level = "INFO"
