@@ -1,3 +1,4 @@
+# pylint: disable = too-many-lines
 import datetime
 import os.path
 import pathlib
@@ -32,6 +33,17 @@ class AWSCannedResponses:
 
         self.other_instance_id = "test-instance2-id"
         self.other_instance_name = "test-instance2"
+
+        self.hosted_zone = iac.dns.HostedZone(
+            fqdn="bky.sh",
+            hz_id="Z05346603ECE7KDEFCYS2",
+        )
+
+        self.resource_record = iac.dns.ResourceRecord(
+            fqdn="a.b.dlm.bky.sh",
+            ip="'18.205.236.134",
+            record_type="A",
+        )
 
     @property
     def instance(self):
@@ -802,6 +814,192 @@ class AWSCannedResponses:
             "CreateKeyPair",
         )
 
+    @property
+    def list_hosted_zones_by_name__zero_zones(self):
+        return {
+            "DNSName": "boom.sh",
+            "HostedZones": [],
+            "IsTruncated": False,
+            "MaxItems": "1",
+            "ResponseMetadata": {
+                "HTTPHeaders": {
+                    "content-length": "233",
+                    "content-type": "text/xml",
+                    "date": "Sat, 05 Nov 2022 21:30:53 GMT",
+                    "x-amzn-requestid": "d235ba78-91a1-43ab-8139-bc4ad1b8f357",
+                },
+                "HTTPStatusCode": 200,
+                "RequestId": "d235ba78-91a1-43ab-8139-bc4ad1b8f357",
+                "RetryAttempts": 0,
+            },
+        }
+
+    @property
+    def list_hosted_zones_by_name__one_zone(self):
+        return {
+            "DNSName": self.hosted_zone.fqdn,
+            "HostedZones": [
+                {
+                    "CallerReference": "079df300-ed87-4459-ad5d-f9d56f1412bf",
+                    "Config": {"Comment": "", "PrivateZone": False},
+                    "Id": f"/hostedzone/{self.hosted_zone.hz_id}",
+                    "Name": self.hosted_zone.fqdn + ".",
+                    "ResourceRecordSetCount": 6,
+                }
+            ],
+            "IsTruncated": False,
+            "MaxItems": "1",
+            "ResponseMetadata": {
+                "HTTPHeaders": {
+                    "content-length": "521",
+                    "content-type": "text/xml",
+                    "date": "Sat, 05 Nov 2022 21:22:30 GMT",
+                    "x-amzn-requestid": "6132ec8b-9e1d-406b-9da8-db7bf0777d03",
+                },
+                "HTTPStatusCode": 200,
+                "RequestId": "6132ec8b-9e1d-406b-9da8-db7bf0777d03",
+                "RetryAttempts": 0,
+            },
+        }
+
+    @property
+    def change_resource_record_sets__succeess(self):
+        return {
+            "ChangeInfo": {
+                "Id": "/change/C01794081MEKLH83PRA05",
+                "Status": "PENDING",
+                "SubmittedAt": datetime.datetime(2022, 11, 5, 23, 53, 30, 663000, tzinfo=tzutc()),
+            },
+            "ResponseMetadata": {
+                "HTTPHeaders": {
+                    "content-length": "283",
+                    "content-type": "text/xml",
+                    "date": "Sat, 05 Nov 2022 23:53:30 GMT",
+                    "x-amzn-requestid": "7ca9ac33-fb8c-4b8d-b4fb-48d20abca451",
+                },
+                "HTTPStatusCode": 200,
+                "RequestId": "7ca9ac33-fb8c-4b8d-b4fb-48d20abca451",
+                "RetryAttempts": 0,
+            },
+        }
+
+    @property
+    def list_resource_record_sets__one_record(self):
+        return {
+            "IsTruncated": True,
+            "MaxItems": "1",
+            "NextRecordName": "mwittie.bky.sh.",
+            "NextRecordType": "A",
+            "ResourceRecordSets": [
+                {
+                    "Name": self.resource_record.fqdn + ".",
+                    "ResourceRecords": [{"Value": self.resource_record.ip}],
+                    "TTL": 300,
+                    "Type": self.resource_record.record_type,
+                }
+            ],
+            "ResponseMetadata": {
+                "HTTPHeaders": {
+                    "content-length": "509",
+                    "content-type": "text/xml",
+                    "date": "Sun, 06 Nov 2022 00:15:22 GMT",
+                    "x-amzn-requestid": "02cf40ff-c43f-4e42-931a-1398cdd4474e",
+                },
+                "HTTPStatusCode": 200,
+                "RequestId": "02cf40ff-c43f-4e42-931a-1398cdd4474e",
+                "RetryAttempts": 0,
+            },
+        }
+
+    @property
+    def list_resource_record_sets__not_one_record(self):
+        return {
+            "IsTruncated": True,
+            "MaxItems": "1",
+            "NextRecordName": "mwittie.bky.sh.",
+            "NextRecordType": "A",
+            "ResourceRecordSets": [],
+            "ResponseMetadata": {
+                "HTTPHeaders": {
+                    "content-length": "509",
+                    "content-type": "text/xml",
+                    "date": "Sun, 06 Nov 2022 00:15:22 GMT",
+                    "x-amzn-requestid": "02cf40ff-c43f-4e42-931a-1398cdd4474e",
+                },
+                "HTTPStatusCode": 200,
+                "RequestId": "02cf40ff-c43f-4e42-931a-1398cdd4474e",
+                "RetryAttempts": 0,
+            },
+        }
+
+    @property
+    def list_resource_record_sets__many_records(self):
+        return {
+            "IsTruncated": False,
+            "MaxItems": "300",
+            "ResourceRecordSets": [
+                {
+                    "Name": "bky.sh.",
+                    "ResourceRecords": [
+                        {"Value": "ns-382.awsdns-47.com."},
+                        {"Value": "ns-1037.awsdns-01.org."},
+                        {"Value": "ns-866.awsdns-44.net."},
+                        {"Value": "ns-1730.awsdns-24.co.uk."},
+                    ],
+                    "TTL": 172800,
+                    "Type": "NS",
+                },
+                {
+                    "Name": "bky.sh.",
+                    "ResourceRecords": [
+                        {
+                            "Value": "ns-382.awsdns-47.com. "
+                            "awsdns-hostmaster.amazon.com. "
+                            "1 7200 900 1209600 "
+                            "86400"
+                        }
+                    ],
+                    "TTL": 900,
+                    "Type": "SOA",
+                },
+                {
+                    "Name": "mwittie.bky.sh.",
+                    "ResourceRecords": [{"Value": "54.163.127.43"}],
+                    "TTL": 300,
+                    "Type": "A",
+                },
+                {
+                    "Name": "sequencer-dev.bky.sh.",
+                    "ResourceRecords": [{"Value": "3.87.202.142"}],
+                    "TTL": 300,
+                    "Type": "A",
+                },
+                {
+                    "Name": "sequencer-mwittie.bky.sh.",
+                    "ResourceRecords": [{"Value": "44.200.44.151"}],
+                    "TTL": 300,
+                    "Type": "A",
+                },
+                {
+                    "Name": "demo.zpr.bky.sh.",
+                    "ResourceRecords": [{"Value": "54.198.161.170"}],
+                    "TTL": 300,
+                    "Type": "A",
+                },
+            ],
+            "ResponseMetadata": {
+                "HTTPHeaders": {
+                    "content-length": "1673",
+                    "content-type": "text/xml",
+                    "date": "Tue, 08 Nov 2022 20:57:49 GMT",
+                    "x-amzn-requestid": "8aa6bbdc-b666-4854-a569-fd9d474b6951",
+                },
+                "HTTPStatusCode": 200,
+                "RequestId": "8aa6bbdc-b666-4854-a569-fd9d474b6951",
+                "RetryAttempts": 0,
+            },
+        }
+
 
 @pytest.fixture
 def aws_parrot():
@@ -823,4 +1021,10 @@ def config_file_name():
 @pytest.fixture
 def config_file_with_no_creds_name():
     file_name = "config_with_no_creds.toml"
+    return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
+
+
+@pytest.fixture
+def config_file_invalid():
+    file_name = "config_invalid.toml"
     return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)

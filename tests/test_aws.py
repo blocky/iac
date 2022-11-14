@@ -26,10 +26,11 @@ def test_get_credentials__bad_file_name():
     ],
 )
 def test_make_ec2_client__happy_path(creds: Credentials, region: str):
-    ec2 = iac.aws.make_ec2_client(creds, region)
-    assert ec2 is not None
+    client = iac.AWSClient(creds, region)
+    assert client.ec2 is not None
+    assert client.route53 is not None
 
 
 def test_make_ec2_client__empty_region():
     with raises(ValueError):
-        iac.aws.make_ec2_client(Credentials("a", "b"), "")
+        iac.AWSClient(Credentials("a", "b"), "")

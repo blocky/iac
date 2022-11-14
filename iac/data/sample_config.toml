@@ -56,6 +56,18 @@ security_group = "string"
 # - 'nitro' - creates a very large instance with nitro.
 #       The nitro profile is intended for production or developing on a system
 #       that has a real enclave.
+#
 # You MUST change or specify via env var or command line arg
 instance_kind = "string"
 
+# Fully qualified domain name (fqdn) for the dns A record
+# that will point to the instance.  Formally, a fqdn has a trailing stop
+# that is often omitted in applications.  As such, here, we omit the trailing
+# stop.
+#
+# It is assumed that the instance and the hosted zone already exists.
+# We recommend using something in the "bky.sh" domain as many of
+# our AWS security policies restrict sequencer devs to that domain.
+#
+# You MUST change or specify via env var or command line arg
+fqdn = "string"

@@ -13,6 +13,7 @@ def expected_config_from_fixture():
         region="my-region",
         security_group="my-security-group",
         instance_kind="nitro",
+        fqdn="my-fqdn",
     )
 
 
@@ -33,6 +34,11 @@ def test_config__from_toml__no_context_with_user_happy_path(config_file_name):
 
 def test_config__from_toml__no_context_with_user_file_not_found():
     config = iac.Config.from_toml(None, "not-a-file")
+    assert config == iac.Config()
+
+
+def test_config__from_toml__bad_format(config_file_invalid):
+    config = iac.Config.from_toml(None, config_file_invalid)
     assert config == iac.Config()
 
 
