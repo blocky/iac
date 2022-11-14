@@ -61,13 +61,13 @@ security_group = "string"
 instance_kind = "string"
 
 # Fully qualified domain name (fqdn) for the dns A record
-# that will point to the instance.  Fomally, a fqdn has a trailing stop
+# that will point to the instance.  Formally, a fqdn has a trailing stop
 # that is often omitted in applications.  As such, here, we omit the trailing
 # stop.
 #
-# It is assumed that the instance and the hosted zone already exsits.
-# We recommed using something in the "bky.sh" domain as many of
-# our AWS security policies restric sequencer devs to that domain.
+# It is assumed that the instance and the hosted zone already exists.
+# We recommend using something in the "bky.sh" domain as many of
+# our AWS security policies restrict sequencer devs to that domain.
 #
 # You MUST change or specify via env var or command line arg
 fqdn = "string"
