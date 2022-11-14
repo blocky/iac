@@ -34,7 +34,7 @@ class Config:
         # get the "aws" portion of the config
         aws = {}
         if config_file:
-            aws = toml.load(config_file).get("iac").get("aws")
+            aws = toml.load(config_file).get("iac", {}).get("aws", {})
 
         return cls.from_kwargs(**aws)
 
