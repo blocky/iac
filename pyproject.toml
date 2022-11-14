@@ -53,11 +53,11 @@ line-length = 100
 addopts = """
     -ra
     --color=yes
+    --cov=iac
+    --cov-report=term
     --ignore=./tests/live
     -W ignore::DeprecationWarning:invoke.loader
 """
-    # --cov=iac
-    # --cov-report=term
 
 filterwarnings = "ignore:Importing 'itsdangerous.json':DeprecationWarning"
 log_cli = 1
