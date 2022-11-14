@@ -151,7 +151,7 @@ class DNSManager:
         if response["IsTruncated"]:
             raise IACError(
                 IACErrorCode.UNEXPECTED_NUMBER_OF_RECORDS,
-                f"Number of recordes excced {max_items}",
+                f"Number of records exceeded {max_items}",
             )
 
         return list(ResourceRecord.from_aws(r) for r in response["ResourceRecordSets"])
