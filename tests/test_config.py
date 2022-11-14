@@ -13,6 +13,7 @@ def expected_config_from_fixture():
         region="my-region",
         security_group="my-security-group",
         instance_kind="nitro",
+        fqdn="my-fqdn",
     )
 
 
