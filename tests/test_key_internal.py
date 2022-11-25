@@ -50,7 +50,7 @@ def test_describe_key_pairs__key_not_found(aws_parrot):
 
     with raises(IACKeyWarning) as exc_info:
         iac.key.describe_key_pairs(ec2, aws_parrot.key_name)
-    assert exc_info.value.error_code == IACErrorCode.NO_SUCH_KEY
+    assert exc_info.value.error_code == IACErrorCode.KEY_MISSING
 
     ec2.describe_key_pairs.assert_called_once_with(
         KeyNames=[aws_parrot.key_name],

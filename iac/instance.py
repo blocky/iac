@@ -36,7 +36,7 @@ class InstanceKind(Enum):
                 return InstanceKind.NITRO
             case _:
                 raise IACInstanceError(
-                    IACErrorCode.NO_SUCH_INSTANCE_KIND,
+                    IACErrorCode.INSTANCE_UNKNOWN_KIND,
                     f"Cannot create instance kind from '{kind}'",
                 )
 
@@ -99,7 +99,7 @@ def describe_instances(
 def _validate_running(instances: [Instance], instance_name: str):
     if len(instances) == 0:
         raise IACInstanceWarning(
-            IACErrorCode.NO_SUCH_INSTANCE,
+            IACErrorCode.INSTANCE_MISSING,
             f"Instance '{instance_name}' is not running",
         )
 
@@ -144,7 +144,7 @@ def _ec2_config(
             definition["EnclaveOptions"] = {"Enabled": True}
         case _:
             raise IACInstanceError(
-                IACErrorCode.NO_SUCH_INSTANCE_KIND,
+                IACErrorCode.INSTANCE_UNKNOWN_KIND,
                 f"Unknown instance kind '{kind}'",
             )
     return definition
@@ -200,7 +200,7 @@ def create_instance(
     instances = describe_instances(ec2, instance_name)
     if len(instances) != 0:
         raise IACInstanceWarning(
-            IACErrorCode.DUPLICATE_INSTANCE,
+            IACErrorCode.INSTANCE_DUPLICATE,
             f"Instance '{instance_name}' already exists",
         )
 
