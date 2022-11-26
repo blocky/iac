@@ -64,7 +64,7 @@ def iac_cmd(
     region,
     debug,
 ):  # noqa: R0913
-    conf = iac.Config.from_toml(config_file, user_config_file_name())
+    conf = ned.Config.from_toml(config_file, user_config_file_name())
 
     conf.debug = debug or conf.debug
     conf.region = region or conf.region
@@ -74,11 +74,11 @@ def iac_cmd(
 
     creds = None
     if conf.access_key and conf.secret_key:
-        creds = iac.aws.Credentials(conf.access_key, conf.secret_key)
+        creds = ned.aws.Credentials(conf.access_key, conf.secret_key)
     elif conf.cred_file:
-        creds = iac.get_credentials(conf.cred_file)
+        creds = ned.get_credentials(conf.cred_file)
 
-    ctx.obj["client"] = iac.AWSClient(creds, conf.region) if creds else None
+    ctx.obj["client"] = ned.AWSClient(creds, conf.region) if creds else None
     ctx.obj["conf"] = conf
 
 
@@ -103,9 +103,9 @@ def key_create_cmd(ctx):
     conf = ctx.obj["conf"]
     client = ctx.obj["client"]
 
-    kfm = iac.KeyFileManager(conf.secrets_folder)
-    key = iac.create_key_pair(client.ec2, kfm, conf.key_name)
-    console(key, to_dict=iac.Key.to_dict)
+    kfm = ned.KeyFileManager(conf.secrets_folder)
+    key = ned.create_key_pair(client.ec2, kfm, conf.key_name)
+    console(key, to_dict=ned.Key.to_dict)
 
 
 @click.command(name="delete")
@@ -116,9 +116,9 @@ def key_delete_cmd(ctx):
     conf = ctx.obj["conf"]
     client = ctx.obj["client"]
 
-    kfm = iac.KeyFileManager(conf.secrets_folder)
-    key = iac.delete_key_pair(client.ec2, kfm, conf.key_name)
-    console(key, to_dict=iac.Key.to_dict)
+    kfm = ned.KeyFileManager(conf.secrets_folder)
+    key = ned.delete_key_pair(client.ec2, kfm, conf.key_name)
+    console(key, to_dict=ned.Key.to_dict)
 
 
 @click.command(name="list")
@@ -128,8 +128,8 @@ def key_list_cmd(ctx):
 
     client = ctx.obj["client"]
 
-    keys = iac.list_key_pairs(client.ec2)
-    console(keys, to_dict=iac.Key.to_dict)
+    keys = ned.list_key_pairs(client.ec2)
+    console(keys, to_dict=ned.Key.to_dict)
 
 
 @click.command(name="dbgconf")
@@ -137,7 +137,7 @@ def key_list_cmd(ctx):
 def x_dbgconf_cmd(ctx):
     fail_on_nodebug(ctx)
 
-    console(ctx.obj["conf"], to_dict=iac.Config.to_dict)
+    console(ctx.obj["conf"], to_dict=ned.Config.to_dict)
 
 
 iac_cmd.add_command(key_cmd)
@@ -160,7 +160,7 @@ def instance_cmd(ctx, instance_name, key_name, security_group, nitro):
     conf.key_name = key_name or conf.key_name
     conf.security_group = security_group or conf.security_group
 
-    IK = iac.InstanceKind
+    IK = ned.InstanceKind
     if nitro is not None:
         conf.instance_kind = IK.NITRO.value if nitro else IK.STANDARD.value
 
@@ -175,15 +175,15 @@ def instance_create_cmd(ctx):
     conf = ctx.obj["conf"]
     client = ctx.obj["client"]
 
-    instance = iac.create_instance(
+    instance = ned.create_instance(
         client.ec2,
-        iac.InstanceKind.from_str(conf.instance_kind),
+        ned.InstanceKind.from_str(conf.instance_kind),
         conf.instance_name,
         conf.key_name,
         conf.security_group,
-        iac.instance.InstanceRunningBarrier(client.ec2),
+        ned.instance.InstanceRunningBarrier(client.ec2),
     )
-    console(instance, to_dict=iac.Instance.to_dict)
+    console(instance, to_dict=ned.Instance.to_dict)
 
 
 @click.command(name="terminate")
@@ -194,8 +194,8 @@ def instance_terminate_cmd(ctx):
     client = ctx.obj["client"]
     instance_name = ctx.obj["conf"].instance_name
 
-    instance = iac.terminate_instance(client.ec2, instance_name)
-    console(instance, to_dict=iac.Instance.to_dict)
+    instance = ned.terminate_instance(client.ec2, instance_name)
+    console(instance, to_dict=ned.Instance.to_dict)
 
 
 @click.command(name="list")
@@ -205,8 +205,8 @@ def instance_list_cmd(ctx):
 
     client = ctx.obj["client"]
 
-    instances = iac.list_instances(client.ec2)
-    console(instances, to_dict=iac.Instance.to_dict)
+    instances = ned.list_instances(client.ec2)
+    console(instances, to_dict=ned.Instance.to_dict)
 
 
 iac_cmd.add_command(instance_cmd)
@@ -229,9 +229,9 @@ def remote_runner(ctx):
     conf = ctx.obj["conf"]
     client = ctx.obj["client"]
 
-    key_file = iac.KeyFileManager(conf.secrets_folder).key_file(conf.key_name)
-    instance = iac.fetch_instance(client.ec2, conf.instance_name)
-    return iac.RemoteCMDRunner.from_instance_and_key_file(instance, key_file)
+    key_file = ned.KeyFileManager(conf.secrets_folder).key_file(conf.key_name)
+    instance = ned.fetch_instance(client.ec2, conf.instance_name)
+    return ned.RemoteCMDRunner.from_instance_and_key_file(instance, key_file)
 
 
 @click.group(name="deploy")
@@ -265,7 +265,7 @@ def deploy_cmd_run(ctx, cmd):
     fail_on_debug(ctx)
 
     out = remote_runner(ctx).run(cmd)
-    console(out, to_dict=iac.run_result_to_dict)
+    console(out, to_dict=ned.run_result_to_dict)
 
 
 iac_cmd.add_command(deploy_cmd)
@@ -295,9 +295,9 @@ def dns_cmd_create(ctx):
     conf = ctx.obj["conf"]
     client = ctx.obj["client"]
 
-    instance = iac.fetch_instance(client.ec2, conf.instance_name)
+    instance = ned.fetch_instance(client.ec2, conf.instance_name)
 
-    dns = iac.DNSManager(client.route53)
+    dns = ned.DNSManager(client.route53)
     dns.create_a_record(conf.fqdn, instance.public_ip_address)
 
 
@@ -309,9 +309,9 @@ def dns_cmd_describe(ctx):
     conf = ctx.obj["conf"]
     client = ctx.obj["client"]
 
-    dns = iac.DNSManager(client.route53)
+    dns = ned.DNSManager(client.route53)
     record = dns.list_a_records(conf.fqdn)
-    console(record, to_dict=iac.ResourceRecord.to_dict)
+    console(record, to_dict=ned.ResourceRecord.to_dict)
 
 
 @click.command(name="describe")
@@ -322,9 +322,9 @@ def dns_cmd_list(ctx):
     conf = ctx.obj["conf"]
     client = ctx.obj["client"]
 
-    dns = iac.DNSManager(client.route53)
+    dns = ned.DNSManager(client.route53)
     records = dns.describe_a_record(conf.fqdn)
-    console(records, to_dict=iac.ResourceRecord.to_dict)
+    console(records, to_dict=ned.ResourceRecord.to_dict)
 
 
 @click.command(name="delete")
@@ -335,7 +335,7 @@ def dns_cmd_delete(ctx):
     conf = ctx.obj["conf"]
     client = ctx.obj["client"]
 
-    dns = iac.DNSManager(client.route53)
+    dns = ned.DNSManager(client.route53)
     dns.delete_a_record(conf.fqdn)
 
 

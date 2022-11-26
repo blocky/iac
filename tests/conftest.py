@@ -34,12 +34,12 @@ class AWSCannedResponses:
         self.other_instance_id = "test-instance2-id"
         self.other_instance_name = "test-instance2"
 
-        self.hosted_zone = iac.dns.HostedZone(
+        self.hosted_zone = ned.dns.HostedZone(
             fqdn="bky.sh",
             hz_id="Z05346603ECE7KDEFCYS2",
         )
 
-        self.resource_record = iac.dns.ResourceRecord(
+        self.resource_record = ned.dns.ResourceRecord(
             fqdn="a.b.dlm.bky.sh",
             ip="'18.205.236.134",
             record_type="A",
@@ -49,13 +49,13 @@ class AWSCannedResponses:
     def instance(self):
         resp = self.describe_instances__one_instance
         inst = resp["Reservations"][0]["Instances"][0]
-        return iac.Instance.from_aws_instance(inst)
+        return ned.Instance.from_aws_instance(inst)
 
     @property
     def other_instance(self):
         resp = self.describe_instances__many_instances
         inst = resp["Reservations"][0]["Instances"][0]
-        return iac.Instance.from_aws_instance(inst)
+        return ned.Instance.from_aws_instance(inst)
 
     @property
     def describe_instances__no_instances(self):

@@ -1,4 +1,4 @@
-[iac.aws]
+[ned.aws]
 secrets_folder = "my-secrets-folder"
 instance_name = "my-instance"
 key_name = "my-key"

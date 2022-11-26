@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import botocore.client
 
-from iac.exception import NEDError, NEDErrorCode
+from ned.exception import NEDError, NEDErrorCode
 
 
 def parse_domain_name(name: str, require_subdomain=True) -> (str, str):

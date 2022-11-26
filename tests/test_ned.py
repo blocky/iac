@@ -16,7 +16,7 @@ def run_app(*args, **kwargs):
     # For example, if __main__.py invokes the ned command as
     #
     #   def main():
-    #       iac.iac_cmd(obj={}, auto_envvar_prefix="BKY_NED")
+    #       ned.iac_cmd(obj={}, auto_envvar_prefix="BKY_NED")
     #
     # We need to make sure that the `obj` and `auto_envvar_prefix` values are
     # the same in the CliRunner invocation:
@@ -27,7 +27,7 @@ def run_app(*args, **kwargs):
     # So for example:
     #
     #   def main():
-    #       iac.iac_cmd(**iac.NED_CMD_KWARGS)
+    #       ned.iac_cmd(**ned.NED_CMD_KWARGS)
     #
     # and
     #
@@ -37,8 +37,8 @@ def run_app(*args, **kwargs):
     )
 
 
-@patch("iac.get_credentials")
-@patch("iac.AWSClient")
+@patch("ned.get_credentials")
+@patch("ned.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "config", "deploy"])
 def test_setup_no_keys_or_creds(
     mock_aws_client_init,
@@ -57,8 +57,8 @@ def test_setup_no_keys_or_creds(
     mock_aws_client_init.assert_not_called()
 
 
-@patch("iac.get_credentials")
-@patch("iac.AWSClient")
+@patch("ned.get_credentials")
+@patch("ned.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
 def test_setup_aws_client_uses_creds_file_when_missing_both_keys(
     mock_aws_client_init,
@@ -83,8 +83,8 @@ def test_setup_aws_client_uses_creds_file_when_missing_both_keys(
     mock_aws_client_init.assert_called_once_with(creds, ANY)
 
 
-@patch("iac.get_credentials")
-@patch("iac.AWSClient")
+@patch("ned.get_credentials")
+@patch("ned.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
 def test_setup_aws_client_uses_creds_file_when_missing_secret_key(
     mock_aws_client_init,
@@ -110,8 +110,8 @@ def test_setup_aws_client_uses_creds_file_when_missing_secret_key(
     mock_aws_client_init.assert_called_once_with(creds, ANY)
 
 
-@patch("iac.get_credentials")
-@patch("iac.AWSClient")
+@patch("ned.get_credentials")
+@patch("ned.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
 def test_setup_aws_client_uses_creds_file_when_missing_access_key(
     mock_aws_client_init,
@@ -137,8 +137,8 @@ def test_setup_aws_client_uses_creds_file_when_missing_access_key(
     mock_aws_client_init.assert_called_once_with(creds, ANY)
 
 
-@patch("iac.get_credentials")
-@patch("iac.AWSClient")
+@patch("ned.get_credentials")
+@patch("ned.AWSClient")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
 def test_setup_aws_client_uses_keys_when_both_keys_present(
     mock_aws_client_init,
@@ -149,7 +149,7 @@ def test_setup_aws_client_uses_keys_when_both_keys_present(
     access_key = "abc"
     secret_key = "123"
 
-    creds = iac.aws.Credentials(access_key, secret_key)
+    creds = ned.aws.Credentials(access_key, secret_key)
 
     client = Mock()
     mock_aws_client_init.return_value = client
@@ -167,8 +167,8 @@ def test_setup_aws_client_uses_keys_when_both_keys_present(
     mock_aws_client_init.assert_called_once_with(creds, ANY)
 
 
-@patch("iac.fetch_instance")
-@patch("iac.RemoteCMDRunner.from_instance_and_key_file")
+@patch("ned.fetch_instance")
+@patch("ned.RemoteCMDRunner.from_instance_and_key_file")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
 def test_dbgconf__error_when_not_in_debug(_m1, _m2, subcommand, config_file_name):
     result = run_app(
@@ -183,8 +183,8 @@ def test_dbgconf__error_when_not_in_debug(_m1, _m2, subcommand, config_file_name
     assert result.output.endswith("Error: Cannot run command in nodebug mode\n")
 
 
-@patch("iac.fetch_instance")
-@patch("iac.RemoteCMDRunner.from_instance_and_key_file")
+@patch("ned.fetch_instance")
+@patch("ned.RemoteCMDRunner.from_instance_and_key_file")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
 def test_dbgconf__error_by_default(_m1, _m2, subcommand, config_file_name):
     result = run_app(
@@ -198,8 +198,8 @@ def test_dbgconf__error_by_default(_m1, _m2, subcommand, config_file_name):
     assert result.output.endswith("Error: Cannot run command in nodebug mode\n")
 
 
-@patch("iac.fetch_instance")
-@patch("iac.RemoteCMDRunner.from_instance_and_key_file")
+@patch("ned.fetch_instance")
+@patch("ned.RemoteCMDRunner.from_instance_and_key_file")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
 def test_dbgconf__ok_when_in_debug(_m1, _m2, subcommand, config_file_name):
     result = run_app(
@@ -213,8 +213,8 @@ def test_dbgconf__ok_when_in_debug(_m1, _m2, subcommand, config_file_name):
     assert result.exit_code == 0
 
 
-@patch("iac.fetch_instance")
-@patch("iac.RemoteCMDRunner.from_instance_and_key_file")
+@patch("ned.fetch_instance")
+@patch("ned.RemoteCMDRunner.from_instance_and_key_file")
 @mark.parametrize(
     "subcmd,subsubcmd,args",
     [
@@ -252,9 +252,9 @@ def test_normal_commands__fail_in_debug(
     assert result.output.endswith("Error: Cannot run command in debug mode\n")
 
 
-@patch("iac.fetch_instance")
-@patch("iac.RemoteCMDRunner.from_instance_and_key_file")
-@patch("iac.get_credentials")
+@patch("ned.fetch_instance")
+@patch("ned.RemoteCMDRunner.from_instance_and_key_file")
+@patch("ned.get_credentials")
 @mark.parametrize("subcommand", ["instance", "key", "deploy"])
 def test_dbgconf__sets_from_config(
     mock_get_credentials,
@@ -438,8 +438,8 @@ def test_dbgconf__key_sets_from_environment(config_file_name):
     assert conf["security_group"] == "my-security-group"
 
 
-@patch("iac.fetch_instance")
-@patch("iac.RemoteCMDRunner.from_instance_and_key_file")
+@patch("ned.fetch_instance")
+@patch("ned.RemoteCMDRunner.from_instance_and_key_file")
 def test_dbgconf__deploy_sets_from_command_line(_m1, _m2, config_file_name):
     access_key = "abc"
     secret_key = "123"
@@ -476,8 +476,8 @@ def test_dbgconf__deploy_sets_from_command_line(_m1, _m2, config_file_name):
     assert conf["security_group"] == "my-security-group"
 
 
-@patch("iac.fetch_instance")
-@patch("iac.RemoteCMDRunner.from_instance_and_key_file")
+@patch("ned.fetch_instance")
+@patch("ned.RemoteCMDRunner.from_instance_and_key_file")
 def test_dbgconf__deploy_sets_from_environment(_m1, _m2, config_file_name):
     access_key = "abc"
     secret_key = "123"

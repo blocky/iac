@@ -9,7 +9,7 @@ packages =  [
 ]
 
 [tool.poetry.scripts]
-iac = "iac.__main__:main"
+iac = "ned.__main__:main"
 
 [tool.poetry.dependencies]
 boto3 = "^1.24.15"

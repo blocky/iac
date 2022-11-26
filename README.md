@@ -76,7 +76,7 @@ that the values do not need to be the same nor do they need to be different.):
 
     # Assuming that $HOME is "/home/bob"
 
-    [iac.aws]
+    [ned.aws]
     cred_file = /home/bob/secrets/aws--bob-dev.csv
     secrets_folder = /home/bob/secrets/ned/
     instance_name = "seq-dev--bob-dev"

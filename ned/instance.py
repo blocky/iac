@@ -7,9 +7,9 @@ from enum import Enum
 
 import botocore.client
 
-import iac.aws
-from iac.aws import DEPLOYMENT_TAG, SEQUENCER_TAG
-from iac.exception import NEDError, NEDWarning, NEDErrorCode
+import ned.aws
+from ned.aws import DEPLOYMENT_TAG, SEQUENCER_TAG
+from ned.exception import NEDError, NEDWarning, NEDErrorCode
 
 
 class NEDInstanceError(NEDError):
@@ -51,7 +51,7 @@ class Instance:
     state: str
     id: str = None
     key_name: str = None
-    tags: [iac.aws.Tag] = None
+    tags: [ned.aws.Tag] = None
     public_dns_name: str = None
     public_ip_address: str = None
     nitro: bool = None

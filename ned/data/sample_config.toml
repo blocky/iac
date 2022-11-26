@@ -1,4 +1,4 @@
-[iac.aws]
+[ned.aws]
 # NED needs AWS credentials to create and tear down infrastructure
 # there are various ways that these credentials can be supplied.
 # Either provide an absolute path to a credentials file (the CSV file that AWS

@@ -6,9 +6,9 @@ from typing import TypeVar
 import botocore.client
 import botocore.exceptions
 
-import iac.aws
-from iac.aws import DEPLOYMENT_TAG, SEQUENCER_TAG
-from iac.exception import NEDWarning, NEDError, NEDErrorCode
+import ned.aws
+from ned.aws import DEPLOYMENT_TAG, SEQUENCER_TAG
+from ned.exception import NEDWarning, NEDError, NEDErrorCode
 
 
 class NEDKeyError(NEDError):
@@ -25,7 +25,7 @@ KeySelf = TypeVar("KeySelf", bound="Key")
 @dataclass(frozen=True)
 class Key:
     name: str
-    tags: [iac.aws.Tag] = None
+    tags: [ned.aws.Tag] = None
 
     @staticmethod
     def from_aws_key_pair(key_pair: dict) -> KeySelf:
