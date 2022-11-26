@@ -27,7 +27,7 @@ def test_parse_domain_name__malformed(name):
     with raises(iac.IACException) as exc_info:
         iac.dns.parse_domain_name(name)
 
-    assert exc_info.value.error_code == iac.IACErrorCode.INVALID_DOMAIN_NAME
+    assert exc_info.value.error_code == iac.IACErrorCode.DOMAIN_NAME_INVALID
 
 
 def test_hosted_zone__from_aws__happy_path(aws_parrot):
@@ -59,7 +59,7 @@ def test_dns_manager__describe_hosted_zone__fail_to_parse_host():
     with raises(iac.IACException) as exc_info:
         iac.DNSManager(dns).describe_hosted_zone("nope")
 
-    assert exc_info.value.error_code == iac.IACErrorCode.INVALID_DOMAIN_NAME
+    assert exc_info.value.error_code == iac.IACErrorCode.DOMAIN_NAME_INVALID
     dns.assert_not_called()
 
 
@@ -70,7 +70,7 @@ def test_dns_manager__describe_hosted_zone__unexpected_hosted_zones(aws_parrot):
     with raises(iac.IACException) as exc_info:
         iac.DNSManager(dns).describe_hosted_zone("abc.bky.sh")
 
-    assert exc_info.value.error_code == iac.IACErrorCode.INVALID_DOMAIN_NAME
+    assert exc_info.value.error_code == iac.IACErrorCode.DOMAIN_NAME_INVALID
     assert str(exc_info.value).startswith("Error getting host id")
     dns.list_hosted_zones_by_name.assert_called_once()
 
@@ -104,7 +104,7 @@ def test_dns_manager__change_a_record__invalid_op():
     with raises(iac.IACException) as exc_info:
         iac.DNSManager(dns).change_a_record("nope", "abc.bky.sh", "ip-addres")
 
-    assert exc_info.value.error_code == iac.IACErrorCode.INVALID_DNS_A_RECORD_OPERAION
+    assert exc_info.value.error_code == iac.IACErrorCode.DNS_INVALID_RECORD_OPERATION
     dns.list_hosted_zones_by_name.assert_not_called()
     dns.change_resource_record_sets.assert_not_called()
 
@@ -130,7 +130,7 @@ def test_dns_manager__list_a_records__truncated(aws_parrot):
     with raises(iac.IACException) as exc_info:
         iac.DNSManager(dns).list_a_records("bky.sh")
 
-    assert exc_info.value.error_code == iac.IACErrorCode.UNEXPECTED_NUMBER_OF_RECORDS
+    assert exc_info.value.error_code == iac.IACErrorCode.DNS_UNEXPECTED_NUMBER_OF_RECORDS
     dns.list_hosted_zones_by_name.assert_called_once()
     dns.list_resource_record_sets.assert_called_once()
 
@@ -178,6 +178,6 @@ def test_dns_manager__describe_a_record__not_one_record(aws_parrot):
     with raises(iac.IACException) as exc_info:
         iac.DNSManager(dns).describe_a_record("a.b.dlm.bky.sh")
 
-    assert exc_info.value.error_code == iac.IACErrorCode.UNEXPECTED_NUMBER_OF_RECORDS
+    assert exc_info.value.error_code == iac.IACErrorCode.DNS_UNEXPECTED_NUMBER_OF_RECORDS
     dns.list_hosted_zones_by_name.assert_called_once()
     dns.list_resource_record_sets.assert_called_once()

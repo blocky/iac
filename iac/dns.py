@@ -9,7 +9,7 @@ from iac.exception import IACError, IACErrorCode
 def parse_domain_name(name: str, require_subdomain=True) -> (str, str):
     if len(name) > 0 and name[-1] == ".":
         raise IACError(
-            IACErrorCode.INVALID_DOMAIN_NAME,
+            IACErrorCode.DOMAIN_NAME_INVALID,
             f"Invalid domain name '{name}', trailing stop should be omitted",
         )
 
@@ -17,7 +17,7 @@ def parse_domain_name(name: str, require_subdomain=True) -> (str, str):
 
     if len(tokens) < 2:
         raise IACError(
-            IACErrorCode.INVALID_DOMAIN_NAME,
+            IACErrorCode.DOMAIN_NAME_INVALID,
             f"Invalid domain name '{name}'",
         )
 
@@ -26,7 +26,7 @@ def parse_domain_name(name: str, require_subdomain=True) -> (str, str):
 
     if subdomain is None and require_subdomain:
         raise IACError(
-            IACErrorCode.INVALID_DOMAIN_NAME,
+            IACErrorCode.DOMAIN_NAME_INVALID,
             f"Subdomain required but received '{name}'",
         )
 
@@ -92,7 +92,7 @@ class DNSManager:
         hosted_zones = response["HostedZones"]
         if len(hosted_zones) != 1:
             raise IACError(
-                IACErrorCode.INVALID_DOMAIN_NAME,
+                IACErrorCode.DOMAIN_NAME_INVALID,
                 f"Error getting host id from route 53 for '{fqdn}': '{response}'",
             )
 
@@ -108,7 +108,7 @@ class DNSManager:
     def change_a_record(self, operation: str, fqdn: str, ip_address: str) -> dict:
         if operation not in {"CREATE", "DELETE"}:
             raise IACError(
-                IACErrorCode.INVALID_DNS_A_RECORD_OPERAION,
+                IACErrorCode.DNS_INVALID_RECORD_OPERATION,
                 f"Invalid operation on an A record operation '{operation}'",
             )
 
@@ -150,7 +150,7 @@ class DNSManager:
 
         if response["IsTruncated"]:
             raise IACError(
-                IACErrorCode.UNEXPECTED_NUMBER_OF_RECORDS,
+                IACErrorCode.DNS_UNEXPECTED_NUMBER_OF_RECORDS,
                 f"Number of records exceeded {max_items}",
             )
 
@@ -168,7 +168,7 @@ class DNSManager:
         record_sets = response["ResourceRecordSets"]
         if len(record_sets) != 1:
             raise IACError(
-                IACErrorCode.UNEXPECTED_NUMBER_OF_RECORDS,
+                IACErrorCode.DNS_UNEXPECTED_NUMBER_OF_RECORDS,
                 f"Expected 1 record for '{fqdn}' received {len(record_sets)}",
             )
 

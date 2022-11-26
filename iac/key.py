@@ -93,7 +93,7 @@ def describe_key_pairs(ec2: botocore.client.BaseClient, key_name: str = None) ->
         return ec2.describe_key_pairs(KeyNames=[key_name], Filters=filters)
     except botocore.exceptions.ClientError as exc:
         if exc.response["Error"]["Code"] == "InvalidKeyPair.NotFound":
-            raise IACKeyWarning(IACErrorCode.NO_SUCH_KEY, pformat(exc.response)) from exc
+            raise IACKeyWarning(IACErrorCode.KEY_MISSING, pformat(exc.response)) from exc
         raise exc
 
 
@@ -118,7 +118,7 @@ def create_key_pair(
         )
     except botocore.exceptions.ClientError as exc:
         if exc.response["Error"]["Code"] == "InvalidKeyPair.Duplicate":
-            raise IACKeyWarning(IACErrorCode.DUPLICATE_KEY, pformat(exc.response)) from exc
+            raise IACKeyWarning(IACErrorCode.KEY_DUPLICATE, pformat(exc.response)) from exc
         raise exc
 
     kfm.create(key_name, res["KeyMaterial"])
@@ -135,7 +135,7 @@ def delete_key_pair(
 
     if len(res["KeyPairs"]) != 1:
         raise IACKeyError(
-            IACErrorCode.NO_SUCH_KEY,
+            IACErrorCode.KEY_MISSING,
             f"Found not exactly one key {key_name} to delete",
         )
 
@@ -149,7 +149,7 @@ def delete_key_pair(
                 f"Key '{key_name}' was not deleted",
             )
     except IACKeyWarning as exc:
-        if exc.error_code != IACErrorCode.NO_SUCH_KEY:
+        if exc.error_code != IACErrorCode.KEY_MISSING:
             raise exc
 
     kfm.delete(key_name)

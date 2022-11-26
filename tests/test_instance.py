@@ -14,7 +14,7 @@ def test_instace_kind__from_str():
     assert iac.InstanceKind.from_str("nitro") == iac.InstanceKind.NITRO
     with raises(iac.IACInstanceError) as e:
         iac.InstanceKind.from_str("not-a-kind")
-    assert e.value.error_code == iac.IACErrorCode.NO_SUCH_INSTANCE_KIND
+    assert e.value.error_code == iac.IACErrorCode.INSTANCE_UNKNOWN_KIND
     assert "Cannot create instance kind from" in str(e.value)
 
 
@@ -255,7 +255,7 @@ def test_create_instance__instance_already_exists(
             aws_parrot.key_name,
             aws_parrot.security_group,
         )
-    assert exc_info.value.error_code == iac.IACErrorCode.DUPLICATE_INSTANCE
+    assert exc_info.value.error_code == iac.IACErrorCode.INSTANCE_DUPLICATE
 
     mock_describe_instances.assert_called_once_with(ec2, aws_parrot.instance_name)
     ec2.run_instances.assert_not_called()
@@ -316,7 +316,7 @@ def test_terminate_instance__instance_not_running(mock_describe_instances):
     with raises(iac.IACInstanceWarning) as exc_info:
         iac.terminate_instance(ec2, instance_name)
 
-    assert exc_info.value.error_code == iac.IACErrorCode.NO_SUCH_INSTANCE
+    assert exc_info.value.error_code == iac.IACErrorCode.INSTANCE_MISSING
     mock_describe_instances.assert_called_once_with(ec2, instance_name)
     ec2.terminate_instances.assert_not_called()
 
@@ -423,7 +423,7 @@ def test_fetch_instance__no_instance(mock_describe_instances):
     with raises(iac.IACInstanceWarning) as exc_info:
         iac.fetch_instance(ec2, instance_name)
 
-    assert exc_info.value.error_code == iac.IACErrorCode.NO_SUCH_INSTANCE
+    assert exc_info.value.error_code == iac.IACErrorCode.INSTANCE_MISSING
     mock_describe_instances.assert_called_once_with(ec2, instance_name)
 
 

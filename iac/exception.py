@@ -3,22 +3,21 @@ from enum import Enum, unique, auto
 
 @unique
 class IACErrorCode(Enum):
-    NO_SUCH_KEY = auto()
-    DUPLICATE_KEY = auto()
-    KEY_FILE_EXISTS = auto()
-    NO_SUCH_KEY_FILE = auto()
     KEY_DELETE_FAIL = auto()
-    DUPLICATE_INSTANCE = auto()
+    KEY_DUPLICATE = auto()
+    KEY_FILE_EXISTS = auto()
+    KEY_MISSING = auto()
+    INSTANCE_DUPLICATE = auto()
     INSTANCE_NAME_COLLISION = auto()
     INSTANCE_NOT_RUNNING = auto()
+    INSTANCE_MISSING = auto()
     INSTANCE_TERMINATION_FAIL = auto()
-    NO_SUCH_INSTANCE = auto()
-    NO_SUCH_INSTANCE_KIND = auto()
-    INVALID_DOMAIN_NAME = auto()
+    INSTANCE_UNKNOWN_KIND = auto()
+    DOMAIN_NAME_INVALID = auto()
     DOMAIN_NAME_NOT_FOUND = auto()
-    INVALID_DNS_A_RECORD_OPERAION = auto()
-    UNEXPECTED_NUMBER_OF_RECORDS = auto()
+    DNS_INVALID_RECORD_OPERATION = auto()
     DNS_RECORD_NOT_FOUND = auto()
+    DNS_UNEXPECTED_NUMBER_OF_RECORDS = auto()
 
 
 class IACException(Exception):
