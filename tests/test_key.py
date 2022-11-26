@@ -49,10 +49,7 @@ def test_key_file_manager__create__happy_path(mock_open):
     got = iac.KeyFileManager(folder).create(name, material)
     assert want == got
     mock_open.assert_called_once_with(
-        want.path,
-        mode="x",
-        encoding=ANY,
-        opener=iac.KeyFileManager.open_as_600
+        want.path, mode="x", encoding=ANY, opener=iac.KeyFileManager.open_as_600
     )
     file.write.assert_called_once_with(material)
 
