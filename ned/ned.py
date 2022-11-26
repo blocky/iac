@@ -55,7 +55,7 @@ def fail_on_debug(ctx):
 @click.option("--debug/--no-debug", default=False, show_envvar=True, show_default=True)
 @click.pass_context
 # pylint: disable = too-many-arguments
-def iac_cmd(
+def ned_cmd(
     ctx,
     config_file,
     access_key,
@@ -140,7 +140,7 @@ def x_dbgconf_cmd(ctx):
     console(ctx.obj["conf"], to_dict=ned.Config.to_dict)
 
 
-iac_cmd.add_command(key_cmd)
+ned_cmd.add_command(key_cmd)
 key_cmd.add_command(key_create_cmd)
 key_cmd.add_command(key_delete_cmd)
 key_cmd.add_command(key_list_cmd)
@@ -209,7 +209,7 @@ def instance_list_cmd(ctx):
     console(instances, to_dict=ned.Instance.to_dict)
 
 
-iac_cmd.add_command(instance_cmd)
+ned_cmd.add_command(instance_cmd)
 instance_cmd.add_command(instance_create_cmd)
 instance_cmd.add_command(instance_terminate_cmd)
 instance_cmd.add_command(instance_list_cmd)
@@ -222,7 +222,7 @@ def config_cmd():
         console(handle.read())
 
 
-iac_cmd.add_command(config_cmd)
+ned_cmd.add_command(config_cmd)
 
 
 def remote_runner(ctx):
@@ -268,7 +268,7 @@ def deploy_cmd_run(ctx, cmd):
     console(out, to_dict=ned.run_result_to_dict)
 
 
-iac_cmd.add_command(deploy_cmd)
+ned_cmd.add_command(deploy_cmd)
 deploy_cmd.add_command(deploy_cmd_copy)
 deploy_cmd.add_command(deploy_cmd_run)
 deploy_cmd.add_command(x_dbgconf_cmd)
@@ -339,7 +339,7 @@ def dns_cmd_delete(ctx):
     dns.delete_a_record(conf.fqdn)
 
 
-iac_cmd.add_command(dns_cmd)
+ned_cmd.add_command(dns_cmd)
 dns_cmd.add_command(dns_cmd_create)
 dns_cmd.add_command(dns_cmd_list)
 dns_cmd.add_command(dns_cmd_describe)

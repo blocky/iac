@@ -34,12 +34,12 @@ def run(cmd, log_cmd=False) -> dict:
 
 
 class NEDRunner:
-    def __init__(self, iac_cmd, log_cmd=True):
-        self.iac_cmd = iac_cmd
+    def __init__(self, ned_cmd, log_cmd=True):
+        self.ned_cmd = ned_cmd
         self.log_cmd = log_cmd
 
     def __call__(self, *args, load_output=True) -> dict:
-        cmd = self.iac_cmd + " " + " ".join(args)
+        cmd = self.ned_cmd + " " + " ".join(args)
         try:
             proc = run(cmd, log_cmd=self.log_cmd)
             assert proc.returncode == 0
@@ -58,7 +58,7 @@ class NEDRunner:
         return json.loads(output) if output and load_output else {}
 
 
-def test_iac_workflow__happy_path(pyiac):
+def test_ned_workflow__happy_path(pyiac):
     # pylint: disable=too-many-statements
     # pylint: disable=too-many-locals
     key_name = "bky-iac-live-test-key"

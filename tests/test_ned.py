@@ -16,24 +16,24 @@ def run_app(*args, **kwargs):
     # For example, if __main__.py invokes the ned command as
     #
     #   def main():
-    #       ned.iac_cmd(obj={}, auto_envvar_prefix="BKY_NED")
+    #       ned.ned_cmd(obj={}, auto_envvar_prefix="BKY_NED")
     #
     # We need to make sure that the `obj` and `auto_envvar_prefix` values are
     # the same in the CliRunner invocation:
     #
-    #   CliRunner().invoke(app.iac_cmd, ..., obj={}, auto_envvar_prefix="BKY_NED")
+    #   CliRunner().invoke(app.ned_cmd, ..., obj={}, auto_envvar_prefix="BKY_NED")
     #
     # To make our lives easier, we can use the NED_CMD_KWARGS in both places.
     # So for example:
     #
     #   def main():
-    #       ned.iac_cmd(**ned.NED_CMD_KWARGS)
+    #       ned.ned_cmd(**ned.NED_CMD_KWARGS)
     #
     # and
     #
-    #    CliRunner().invoke(app.iac_cmd, ..., **app.NED_CMD_KWARGS)
+    #    CliRunner().invoke(app.ned_cmd, ..., **app.NED_CMD_KWARGS)
     return CliRunner().invoke(
-        app.iac_cmd, args, catch_exceptions=False, env=kwargs, **app.NED_CMD_KWARGS
+        app.ned_cmd, args, catch_exceptions=False, env=kwargs, **app.NED_CMD_KWARGS
     )
 
 
