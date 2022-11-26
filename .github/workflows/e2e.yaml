@@ -26,16 +26,16 @@ jobs:
           access_key: ${{ secrets.LIVE_ACCESS_KEY }}
           secret_key: ${{ secrets.LIVE_SECRET_KEY }}
           region: "us-east-1"
-          data_dir_name: "iac-live-test-data"
+          data_dir_name: "ned-live-test-data"
           security_group: "mwittie-testing"
         run: |
           export data_dir="$HOME/$data_dir_name"
           mkdir "$data_dir"
-          BKY_IAC_ACCESS_KEY=$access_key \
-            BKY_IAC_SECRET_KEY=$secret_key \
-            BKY_IAC_REGION=$region \
-            BKY_IAC_KEY_SECRETS_FOLDER=$data_dir \
-            BKY_IAC_INSTANCE_SECURITY_GROUP=$security_group \
-            BKY_IAC_DEPLOY_SECRETS_FOLDER=$data_dir \
-            make pyiac=iac test-live
+          BKY_NED_ACCESS_KEY=$access_key \
+            BKY_NED_SECRET_KEY=$secret_key \
+            BKY_NED_REGION=$region \
+            BKY_NED_KEY_SECRETS_FOLDER=$data_dir \
+            BKY_NED_INSTANCE_SECURITY_GROUP=$security_group \
+            BKY_NED_DEPLOY_SECRETS_FOLDER=$data_dir \
+            make pyned=ned test-live
           rm -r "$data_dir"

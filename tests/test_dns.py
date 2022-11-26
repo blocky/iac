@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 from pytest import mark, raises
 
-import iac
+import ned
 
 
 @mark.parametrize(
@@ -14,7 +14,7 @@ import iac
     ],
 )
 def test_parse_domain_name__happy_path(name, want_domain, want_subdomain):
-    got_domain, got_subdomain = iac.dns.parse_domain_name(
+    got_domain, got_subdomain = ned.dns.parse_domain_name(
         name,
         require_subdomain=False,
     )
@@ -24,21 +24,21 @@ def test_parse_domain_name__happy_path(name, want_domain, want_subdomain):
 
 @mark.parametrize("name", ["invalid", "not.enough", "trailing.stop.com."])
 def test_parse_domain_name__malformed(name):
-    with raises(iac.IACException) as exc_info:
-        iac.dns.parse_domain_name(name)
+    with raises(ned.NEDException) as exc_info:
+        ned.dns.parse_domain_name(name)
 
-    assert exc_info.value.error_code == iac.IACErrorCode.DOMAIN_NAME_INVALID
+    assert exc_info.value.error_code == ned.NEDErrorCode.DOMAIN_NAME_INVALID
 
 
 def test_hosted_zone__from_aws__happy_path(aws_parrot):
     response = aws_parrot.list_hosted_zones_by_name__one_zone
-    zone = iac.dns.HostedZone.from_aws(response["HostedZones"][0])
+    zone = ned.dns.HostedZone.from_aws(response["HostedZones"][0])
     assert zone == aws_parrot.hosted_zone
 
 
 def test_resource_record__from_aws__happy_path(aws_parrot):
     response = aws_parrot.list_resource_record_sets__one_record
-    record = iac.dns.ResourceRecord.from_aws(response["ResourceRecordSets"][0])
+    record = ned.dns.ResourceRecord.from_aws(response["ResourceRecordSets"][0])
     assert record == aws_parrot.resource_record
 
 
@@ -47,7 +47,7 @@ def test_dns_manager__descrive_hosted_zone__happy_path(name, aws_parrot):
     dns = Mock()
     dns.list_hosted_zones_by_name.return_value = aws_parrot.list_hosted_zones_by_name__one_zone
 
-    zone = iac.DNSManager(dns).describe_hosted_zone(name)
+    zone = ned.DNSManager(dns).describe_hosted_zone(name)
     assert zone == aws_parrot.hosted_zone
 
     dns.list_hosted_zones_by_name.assert_called_once()
@@ -56,10 +56,10 @@ def test_dns_manager__descrive_hosted_zone__happy_path(name, aws_parrot):
 def test_dns_manager__describe_hosted_zone__fail_to_parse_host():
     dns = Mock()
 
-    with raises(iac.IACException) as exc_info:
-        iac.DNSManager(dns).describe_hosted_zone("nope")
+    with raises(ned.NEDException) as exc_info:
+        ned.DNSManager(dns).describe_hosted_zone("nope")
 
-    assert exc_info.value.error_code == iac.IACErrorCode.DOMAIN_NAME_INVALID
+    assert exc_info.value.error_code == ned.NEDErrorCode.DOMAIN_NAME_INVALID
     dns.assert_not_called()
 
 
@@ -67,10 +67,10 @@ def test_dns_manager__describe_hosted_zone__unexpected_hosted_zones(aws_parrot):
     dns = Mock()
     dns.list_hosted_zones_by_name.return_value = aws_parrot.list_hosted_zones_by_name__zero_zones
 
-    with raises(iac.IACException) as exc_info:
-        iac.DNSManager(dns).describe_hosted_zone("abc.bky.sh")
+    with raises(ned.NEDException) as exc_info:
+        ned.DNSManager(dns).describe_hosted_zone("abc.bky.sh")
 
-    assert exc_info.value.error_code == iac.IACErrorCode.DOMAIN_NAME_INVALID
+    assert exc_info.value.error_code == ned.NEDErrorCode.DOMAIN_NAME_INVALID
     assert str(exc_info.value).startswith("Error getting host id")
     dns.list_hosted_zones_by_name.assert_called_once()
 
@@ -79,10 +79,10 @@ def test_dns_manager__describe_hosted_zone__hosted_zone_not_found(aws_parrot):
     dns = Mock()
     dns.list_hosted_zones_by_name.return_value = aws_parrot.list_hosted_zones_by_name__one_zone
 
-    with raises(iac.IACException) as exc_info:
-        iac.DNSManager(dns).describe_hosted_zone("bbky.sh")
+    with raises(ned.NEDException) as exc_info:
+        ned.DNSManager(dns).describe_hosted_zone("bbky.sh")
 
-    assert exc_info.value.error_code == iac.IACErrorCode.DOMAIN_NAME_NOT_FOUND
+    assert exc_info.value.error_code == ned.NEDErrorCode.DOMAIN_NAME_NOT_FOUND
     dns.list_hosted_zones_by_name.assert_called_once()
 
 
@@ -92,7 +92,7 @@ def test_dns_manager__change_a_record__happy_path(op, aws_parrot):
     dns.list_hosted_zones_by_name.return_value = aws_parrot.list_hosted_zones_by_name__one_zone
     dns.change_resource_record_sets.return_value = aws_parrot.change_resource_record_sets__succeess
 
-    iac.DNSManager(dns).change_a_record(op, "abc.bky.sh", "ip-addres")
+    ned.DNSManager(dns).change_a_record(op, "abc.bky.sh", "ip-addres")
 
     dns.list_hosted_zones_by_name.assert_called_once()
     dns.change_resource_record_sets.assert_called_once()
@@ -101,10 +101,10 @@ def test_dns_manager__change_a_record__happy_path(op, aws_parrot):
 def test_dns_manager__change_a_record__invalid_op():
     dns = Mock()
 
-    with raises(iac.IACException) as exc_info:
-        iac.DNSManager(dns).change_a_record("nope", "abc.bky.sh", "ip-addres")
+    with raises(ned.NEDException) as exc_info:
+        ned.DNSManager(dns).change_a_record("nope", "abc.bky.sh", "ip-addres")
 
-    assert exc_info.value.error_code == iac.IACErrorCode.DNS_INVALID_RECORD_OPERATION
+    assert exc_info.value.error_code == ned.NEDErrorCode.DNS_INVALID_RECORD_OPERATION
     dns.list_hosted_zones_by_name.assert_not_called()
     dns.change_resource_record_sets.assert_not_called()
 
@@ -115,7 +115,7 @@ def test_dns_manager__list_a_records__happy_path(name, aws_parrot):
     dns.list_hosted_zones_by_name.return_value = aws_parrot.list_hosted_zones_by_name__one_zone
     dns.list_resource_record_sets.return_value = aws_parrot.list_resource_record_sets__many_records
 
-    records = iac.DNSManager(dns).list_a_records(name)
+    records = ned.DNSManager(dns).list_a_records(name)
 
     assert len(records) == 6
     dns.list_hosted_zones_by_name.assert_called_once()
@@ -127,10 +127,10 @@ def test_dns_manager__list_a_records__truncated(aws_parrot):
     dns.list_hosted_zones_by_name.return_value = aws_parrot.list_hosted_zones_by_name__one_zone
     dns.list_resource_record_sets.return_value = aws_parrot.list_resource_record_sets__one_record
 
-    with raises(iac.IACException) as exc_info:
-        iac.DNSManager(dns).list_a_records("bky.sh")
+    with raises(ned.NEDException) as exc_info:
+        ned.DNSManager(dns).list_a_records("bky.sh")
 
-    assert exc_info.value.error_code == iac.IACErrorCode.DNS_UNEXPECTED_NUMBER_OF_RECORDS
+    assert exc_info.value.error_code == ned.NEDErrorCode.DNS_UNEXPECTED_NUMBER_OF_RECORDS
     dns.list_hosted_zones_by_name.assert_called_once()
     dns.list_resource_record_sets.assert_called_once()
 
@@ -140,7 +140,7 @@ def test_dns_manager__describe_a_record__happy_path(aws_parrot):
     dns.list_hosted_zones_by_name.return_value = aws_parrot.list_hosted_zones_by_name__one_zone
     dns.list_resource_record_sets.return_value = aws_parrot.list_resource_record_sets__one_record
 
-    resource_record = iac.DNSManager(dns).describe_a_record("a.b.dlm.bky.sh")
+    resource_record = ned.DNSManager(dns).describe_a_record("a.b.dlm.bky.sh")
 
     assert aws_parrot.resource_record == resource_record
 
@@ -150,7 +150,7 @@ def test_dns_manager__describe_a_record__happy_path_no_trailing_stop(aws_parrot)
     dns.list_hosted_zones_by_name.return_value = aws_parrot.list_hosted_zones_by_name__one_zone
     dns.list_resource_record_sets.return_value = aws_parrot.list_resource_record_sets__one_record
 
-    resource_record = iac.DNSManager(dns).describe_a_record("a.b.dlm.bky.sh")
+    resource_record = ned.DNSManager(dns).describe_a_record("a.b.dlm.bky.sh")
 
     assert aws_parrot.resource_record == resource_record
 
@@ -160,10 +160,10 @@ def test_dns_manager__describe_a_record__non_matching_record(aws_parrot):
     dns.list_hosted_zones_by_name.return_value = aws_parrot.list_hosted_zones_by_name__one_zone
     dns.list_resource_record_sets.return_value = aws_parrot.list_resource_record_sets__one_record
 
-    with raises(iac.IACException) as exc_info:
-        iac.DNSManager(dns).describe_a_record("a.b.c.dlm.bky.sh")
+    with raises(ned.NEDException) as exc_info:
+        ned.DNSManager(dns).describe_a_record("a.b.c.dlm.bky.sh")
 
-    assert exc_info.value.error_code == iac.IACErrorCode.DNS_RECORD_NOT_FOUND
+    assert exc_info.value.error_code == ned.NEDErrorCode.DNS_RECORD_NOT_FOUND
     dns.list_hosted_zones_by_name.assert_called_once()
     dns.list_resource_record_sets.assert_called_once()
 
@@ -175,9 +175,9 @@ def test_dns_manager__describe_a_record__not_one_record(aws_parrot):
         aws_parrot.list_resource_record_sets__not_one_record
     )
 
-    with raises(iac.IACException) as exc_info:
-        iac.DNSManager(dns).describe_a_record("a.b.dlm.bky.sh")
+    with raises(ned.NEDException) as exc_info:
+        ned.DNSManager(dns).describe_a_record("a.b.dlm.bky.sh")
 
-    assert exc_info.value.error_code == iac.IACErrorCode.DNS_UNEXPECTED_NUMBER_OF_RECORDS
+    assert exc_info.value.error_code == ned.NEDErrorCode.DNS_UNEXPECTED_NUMBER_OF_RECORDS
     dns.list_hosted_zones_by_name.assert_called_once()
     dns.list_resource_record_sets.assert_called_once()

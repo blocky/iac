@@ -5,14 +5,14 @@ from .aws import (
     DEPLOYMENT_TAG,
     SEQUENCER_TAG,
 )
-from .exception import IACErrorCode, IACWarning, IACError, IACException
+from .exception import NEDErrorCode, NEDWarning, NEDError, NEDException
 from .instance import (
     create_instance,
     terminate_instance,
     list_instances,
     fetch_instance,
-    IACInstanceWarning,
-    IACInstanceError,
+    NEDInstanceWarning,
+    NEDInstanceError,
     Instance,
     InstanceKind,
 )
@@ -20,8 +20,8 @@ from .key import (
     create_key_pair,
     delete_key_pair,
     list_key_pairs,
-    IACKeyWarning,
-    IACKeyError,
+    NEDKeyWarning,
+    NEDKeyError,
     Key,
     KeyFile,
     KeyFileManager,

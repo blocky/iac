@@ -1,15 +1,15 @@
 BLUE=\033[0;34m
 NC=\033[0m # No Color
-pyiac ?= python -m iac
+pyned ?= python -m ned
 
 run:
-	@python -m iac
+	@python -m ned
 
 test-unit:
 	@py.test
 
 test-live:
-	@py.test --pyiac="$(pyiac)" tests/live
+	@py.test --pyned="$(pyned)" tests/live
 
 test: test-unit
 
@@ -21,7 +21,7 @@ lint:
 	@echo "\n${BLUE}Running Black against source and test files...${NC}\n"
 	@black . --check
 	@echo "\n${BLUE}Running Pylint against source...${NC}\n"
-	@pylint iac/**
+	@pylint ned/**
 	@echo "\n${BLUE}Running Pylint against tests...${NC}\n"
 	@pylint -d invalid-name tests/**
 	@echo "\n${BLUE}Running Flake8 against source and test files...${NC}\n"

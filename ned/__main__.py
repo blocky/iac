@@ -1,9 +1,9 @@
-from iac import iac
+from ned import ned
 
 
 def main():
     # pylint: disable = no-value-for-parameter
-    iac.iac_cmd(**iac.IAC_CMD_KWARGS)
+    ned.ned_cmd(**ned.NED_CMD_KWARGS)
 
 
 if __name__ == "__main__":

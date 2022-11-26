@@ -1,5 +1,5 @@
-[iac.aws]
-# IAC needs AWS credentials to create and tear down infrastructure
+[ned.aws]
+# NED needs AWS credentials to create and tear down infrastructure
 # there are various ways that these credentials can be supplied.
 # Either provide an absolute path to a credentials file (the CSV file that AWS
 # provides when you create an access token) or provide values for access key and
@@ -19,7 +19,7 @@ cred_file = "string.csv"
 # You MUST change or specify via env var or command line arg
 secrets_folder = "string"
 
-# Name of the EC2 instance to be managed by IAC - globally unique
+# Name of the EC2 instance to be managed by NED - globally unique
 #
 # You MUST change or specify via env var or command line arg
 instance_name = "string"

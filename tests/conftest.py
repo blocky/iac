@@ -7,18 +7,18 @@ import pytest
 import botocore.exceptions
 from dateutil.tz import tzutc
 
-import iac
+import ned
 
-IAC_UNIT_TEST_FIXTURES_FILE_PATH = pathlib.Path(__file__).parent.joinpath("fixtures").resolve()
+NED_UNIT_TEST_FIXTURES_FILE_PATH = pathlib.Path(__file__).parent.joinpath("fixtures").resolve()
 
 
 def pytest_addoption(parser):
-    parser.addoption("--pyiac", action="store", default="python -m iac")
+    parser.addoption("--pyned", action="store", default="python -m ned")
 
 
 @pytest.fixture
-def pyiac(pytestconfig):
-    return pytestconfig.getoption("--pyiac")
+def pyned(pytestconfig):
+    return pytestconfig.getoption("--pyned")
 
 
 class AWSCannedResponses:
@@ -34,12 +34,12 @@ class AWSCannedResponses:
         self.other_instance_id = "test-instance2-id"
         self.other_instance_name = "test-instance2"
 
-        self.hosted_zone = iac.dns.HostedZone(
+        self.hosted_zone = ned.dns.HostedZone(
             fqdn="bky.sh",
             hz_id="Z05346603ECE7KDEFCYS2",
         )
 
-        self.resource_record = iac.dns.ResourceRecord(
+        self.resource_record = ned.dns.ResourceRecord(
             fqdn="a.b.dlm.bky.sh",
             ip="'18.205.236.134",
             record_type="A",
@@ -49,13 +49,13 @@ class AWSCannedResponses:
     def instance(self):
         resp = self.describe_instances__one_instance
         inst = resp["Reservations"][0]["Instances"][0]
-        return iac.Instance.from_aws_instance(inst)
+        return ned.Instance.from_aws_instance(inst)
 
     @property
     def other_instance(self):
         resp = self.describe_instances__many_instances
         inst = resp["Reservations"][0]["Instances"][0]
-        return iac.Instance.from_aws_instance(inst)
+        return ned.Instance.from_aws_instance(inst)
 
     @property
     def describe_instances__no_instances(self):
@@ -1009,22 +1009,22 @@ def aws_parrot():
 @pytest.fixture
 def credential_file_name():
     file_name = "credentials_for_testing.csv"
-    return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
+    return os.path.join(NED_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
 
 
 @pytest.fixture
 def config_file_name():
     file_name = "config_for_testing.toml"
-    return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
+    return os.path.join(NED_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
 
 
 @pytest.fixture
 def config_file_with_no_creds_name():
     file_name = "config_with_no_creds.toml"
-    return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
+    return os.path.join(NED_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
 
 
 @pytest.fixture
 def config_file_invalid():
     file_name = "config_invalid.toml"
-    return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
+    return os.path.join(NED_UNIT_TEST_FIXTURES_FILE_PATH, file_name)

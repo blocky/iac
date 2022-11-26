@@ -2,8 +2,8 @@ from typing import TypeVar
 
 import fabric
 
-from iac.key import KeyFile
-from iac.instance import Instance
+from ned.key import KeyFile
+from ned.instance import Instance
 
 
 RemoteCMDRunnerSelf = TypeVar("RemoteCMDRunnerSelf", bound="RemoteCMDRunner")

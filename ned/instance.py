@@ -7,16 +7,16 @@ from enum import Enum
 
 import botocore.client
 
-import iac.aws
-from iac.aws import DEPLOYMENT_TAG, SEQUENCER_TAG
-from iac.exception import IACError, IACWarning, IACErrorCode
+import ned.aws
+from ned.aws import DEPLOYMENT_TAG, SEQUENCER_TAG
+from ned.exception import NEDError, NEDWarning, NEDErrorCode
 
 
-class IACInstanceError(IACError):
+class NEDInstanceError(NEDError):
     pass
 
 
-class IACInstanceWarning(IACWarning):
+class NEDInstanceWarning(NEDWarning):
     pass
 
 
@@ -35,8 +35,8 @@ class InstanceKind(Enum):
             case "nitro":
                 return InstanceKind.NITRO
             case _:
-                raise IACInstanceError(
-                    IACErrorCode.INSTANCE_UNKNOWN_KIND,
+                raise NEDInstanceError(
+                    NEDErrorCode.INSTANCE_UNKNOWN_KIND,
                     f"Cannot create instance kind from '{kind}'",
                 )
 
@@ -51,7 +51,7 @@ class Instance:
     state: str
     id: str = None
     key_name: str = None
-    tags: [iac.aws.Tag] = None
+    tags: [ned.aws.Tag] = None
     public_dns_name: str = None
     public_ip_address: str = None
     nitro: bool = None
@@ -98,16 +98,16 @@ def describe_instances(
 
 def _validate_running(instances: [Instance], instance_name: str):
     if len(instances) == 0:
-        raise IACInstanceWarning(
-            IACErrorCode.INSTANCE_MISSING,
+        raise NEDInstanceWarning(
+            NEDErrorCode.INSTANCE_MISSING,
             f"Instance '{instance_name}' is not running",
         )
 
 
 def _validate_not_multiple(instances: [Instance], instance_name: str):
     if len(instances) > 1:
-        raise IACInstanceError(
-            IACErrorCode.INSTANCE_NAME_COLLISION,
+        raise NEDInstanceError(
+            NEDErrorCode.INSTANCE_NAME_COLLISION,
             f"More than one instance {instance_name} exists",
         )
 
@@ -143,8 +143,8 @@ def _ec2_config(
             definition[instance_type_key] = "c5a.xlarge"
             definition["EnclaveOptions"] = {"Enabled": True}
         case _:
-            raise IACInstanceError(
-                IACErrorCode.INSTANCE_UNKNOWN_KIND,
+            raise NEDInstanceError(
+                NEDErrorCode.INSTANCE_UNKNOWN_KIND,
                 f"Unknown instance kind '{kind}'",
             )
     return definition
@@ -181,8 +181,8 @@ class InstanceRunningBarrier(Barrier):
             remaining_attempts -= 1
 
         if not running_inst:
-            raise IACInstanceError(
-                IACErrorCode.INSTANCE_NOT_RUNNING,
+            raise NEDInstanceError(
+                NEDErrorCode.INSTANCE_NOT_RUNNING,
                 f"Instance not running, still in {inst.state}",
             )
         return running_inst
@@ -199,8 +199,8 @@ def create_instance(
     # pylint: disable = too-many-arguments
     instances = describe_instances(ec2, instance_name)
     if len(instances) != 0:
-        raise IACInstanceWarning(
-            IACErrorCode.INSTANCE_DUPLICATE,
+        raise NEDInstanceWarning(
+            NEDErrorCode.INSTANCE_DUPLICATE,
             f"Instance '{instance_name}' already exists",
         )
 
@@ -220,8 +220,8 @@ def terminate_instance(ec2: botocore.client.BaseClient, instance_name: str) -> I
     res = ec2.terminate_instances(InstanceIds=[instance.id])
     current_state = res["TerminatingInstances"][0]["CurrentState"]["Name"]
     if current_state not in {"shutting-down", "terminated"}:
-        raise IACInstanceError(
-            IACErrorCode.INSTANCE_TERMINATION_FAIL,
+        raise NEDInstanceError(
+            NEDErrorCode.INSTANCE_TERMINATION_FAIL,
             f"Instance '{instance_name}' was not terminated state is '{current_state}'",
         )
 
