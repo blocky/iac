@@ -68,68 +68,68 @@ def test_ned_workflow__happy_path(pyiac):
     ned = NEDRunner(pyiac)
 
     info("Check help commands")
-    iac("deploy copy --help", load_output=False)
-    iac("deploy run --help", load_output=False)
-    iac("dns create --help", load_output=False)
+    ned("deploy copy --help", load_output=False)
+    ned("deploy run --help", load_output=False)
+    ned("dns create --help", load_output=False)
 
     info("Checking initial state of keys")
-    keys = iac("key list")
+    keys = ned("key list")
     initial_keys = {k["name"] for k in keys}
 
     if key_name in initial_keys:
         warn(f"Key {key_name} was found, attempting to remove")
-        iac(f"key --key-name={key_name} delete")
+        ned(f"key --key-name={key_name} delete")
 
-        keys = iac("key list")
+        keys = ned("key list")
         initial_keys = {k["name"] for k in keys}
 
     assert key_name not in initial_keys
 
     info("Create key")
-    iac(f"key --key-name={key_name} create")
+    ned(f"key --key-name={key_name} create")
 
     info("Checking key creation")
-    keys = iac("key list")
+    keys = ned("key list")
     assert key_name in {k["name"] for k in keys}
 
     info("Checking initial state of instances")
-    instances = iac("instance list")
+    instances = ned("instance list")
     initial_instances = {i["name"] for i in instances}
 
     if instance_name in initial_instances:
         warn(f"Instance {instance_name} was found, attempting to terminate")
-        iac(f"instance --key-name={key_name} --instance-name={instance_name} terminate")
+        ned(f"instance --key-name={key_name} --instance-name={instance_name} terminate")
 
-        instances = iac("instance list")
+        instances = ned("instance list")
         initial_instances = {i["name"] for i in instances}
 
     assert instance_name not in initial_instances
 
     info("Create instance")
-    iac(f"instance --key-name={key_name} --instance-name={instance_name} --no-nitro create")
+    ned(f"instance --key-name={key_name} --instance-name={instance_name} --no-nitro create")
 
     info("Checking instance creation")
-    instances = iac("instance list")
+    instances = ned("instance list")
     assert instance_name in {i["name"] for i in instances}
 
     info("Checking initial state of DNS")
-    records = iac(f"dns --fqdn={fqdn} list")
+    records = ned(f"dns --fqdn={fqdn} list")
     initial_records = {r["fqdn"] for r in records}
 
     if fqdn in initial_records:
         warn(f"Record {fqdn} was found, attempting to delete")
-        iac(f"dns --instance-name={instance_name} --fqdn={fqdn} delete")
+        ned(f"dns --instance-name={instance_name} --fqdn={fqdn} delete")
 
-        records = iac(f"dns --fqdn={fqdn} list")
+        records = ned(f"dns --fqdn={fqdn} list")
         initial_records = {r["fqdn"] for r in records}
 
     assert fqdn not in initial_records
 
     info("Create DNS record")
-    iac(f"dns --instance-name={instance_name} --fqdn={fqdn} create")
+    ned(f"dns --instance-name={instance_name} --fqdn={fqdn} create")
 
     info("Checking DNS record creation")
-    record = iac(f"dns --fqdn={fqdn} describe")
+    record = ned(f"dns --fqdn={fqdn} describe")
     assert fqdn == record["fqdn"]
 
     info("Giving the system some time to startup")
@@ -142,11 +142,11 @@ def test_ned_workflow__happy_path(pyiac):
         tmp.flush()
 
         info("Copy file")
-        iac(f"deploy --key-name={key_name} --instance-name={instance_name} copy {tmp.name}")
+        ned(f"deploy --key-name={key_name} --instance-name={instance_name} copy {tmp.name}")
 
         path_on_remote = tmp.name.replace(tempfile.gettempdir(), ".")
         info("Run remote command")
-        remote_result = iac(
+        remote_result = ned(
             "deploy",
             f"--key-name={key_name}",
             f"--instance-name={instance_name}",
@@ -155,24 +155,24 @@ def test_ned_workflow__happy_path(pyiac):
         assert remote_result["stdout"] == data
 
     info("Delete DNS record")
-    iac(f"dns --instance-name={instance_name} --fqdn={fqdn} delete")
+    ned(f"dns --instance-name={instance_name} --fqdn={fqdn} delete")
 
     info("Checking DNS deleted")
-    records = iac(f"dns --fqdn={fqdn} list")
+    records = ned(f"dns --fqdn={fqdn} list")
     assert fqdn not in records
 
     info("Terminate instance")
-    iac(f"instance --key-name={key_name} --instance-name={instance_name} terminate")
+    ned(f"instance --key-name={key_name} --instance-name={instance_name} terminate")
 
     info("Checking instance termination")
-    instances = iac("instance list")
+    instances = ned("instance list")
     assert instance_name not in {i["name"] for i in instances}
 
     info("Delete key")
-    iac(f"key --key-name={key_name} delete")
+    ned(f"key --key-name={key_name} delete")
 
     info("Checking key deletion")
-    keys = iac("key list")
+    keys = ned("key list")
     assert key_name not in {k["name"] for k in keys}
 
     info("Success!")

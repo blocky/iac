@@ -17,7 +17,7 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture
-def pyiac(pytestconfig):
+def pyned(pytestconfig):
     return pytestconfig.getoption("--pyned")
 
 
