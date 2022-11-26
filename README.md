@@ -21,8 +21,8 @@ Install [Mamba](https://github.com/mamba-org/mamba) to speed up environment buil
 From the base environment, create and activate (update) a Python environment
 specified in `environment.yaml`
 
-    mamba env update -n bky-iac -f environment.yaml
-    conda activate bky-iac
+    mamba env update -n bky-ned -f environment.yaml
+    conda activate bky-ned
 
 Install all the python dependencies
 
@@ -39,7 +39,7 @@ When you want to clean up run:
     make veryclean
 
 While you can run unit tests without configuring the NED, you will need to
-[Configure NED](#configuring-iac) to run `make test-live` (live tests) or use the
+[Configure NED](#configuring-ned) to run `make test-live` (live tests) or use the
 application.
 
 <a name="configuring-ned"></a>

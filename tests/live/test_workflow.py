@@ -61,9 +61,9 @@ class NEDRunner:
 def test_ned_workflow__happy_path(pyiac):
     # pylint: disable=too-many-statements
     # pylint: disable=too-many-locals
-    key_name = "bky-iac-live-test-key"
-    instance_name = "bky-iac-live-test-instance"
-    fqdn = "bky-iac-live-test-host.bky.sh"
+    key_name = "bky-ned-live-test-key"
+    instance_name = "bky-ned-live-test-instance"
+    fqdn = "bky-ned-live-test-host.bky.sh"
 
     ned = NEDRunner(pyiac)
 
@@ -135,7 +135,7 @@ def test_ned_workflow__happy_path(pyiac):
     info("Giving the system some time to startup")
     time.sleep(30)
 
-    with tempfile.NamedTemporaryFile(prefix="bky-iac-") as tmp:
+    with tempfile.NamedTemporaryFile(prefix="bky-ned-") as tmp:
         junk = "".join(random.choices(string.ascii_lowercase, k=5))
         data = "Blocky Rocks!" + junk
         tmp.write(bytes(data, "utf-8"))
