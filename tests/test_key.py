@@ -1,4 +1,4 @@
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, ANY
 
 from pytest import raises, mark
 
@@ -27,6 +27,12 @@ def test_key__from_aws_instance__happy_path(aws_parrot):
     ]
 
 
+@patch("os.open")
+def test_key_file_manager__open_as_600__happy_path(mock_open):
+    iac.KeyFileManager.open_as_600("path", {})
+    mock_open.assert_called_once_with("path", ANY, 0o600)
+
+
 @patch("builtins.open")
 def test_key_file_manager__create__happy_path(mock_open):
     name = "name"
@@ -42,7 +48,12 @@ def test_key_file_manager__create__happy_path(mock_open):
 
     got = iac.KeyFileManager(folder).create(name, material)
     assert want == got
-    mock_open.assert_called_once_with(want.path, mode="x", encoding="utf-8")
+    mock_open.assert_called_once_with(
+        want.path,
+        mode="x",
+        encoding=ANY,
+        opener=iac.KeyFileManager.open_as_600
+    )
     file.write.assert_called_once_with(material)
 
 

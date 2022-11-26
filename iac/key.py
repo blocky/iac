@@ -55,6 +55,10 @@ class KeyFileManager:
     # this simple default username initialization may need to change.
     username: str = "ec2-user"
 
+    @staticmethod
+    def open_as_600(path, flags):
+        return os.open(path, flags, 0o600)
+
     def key_file(self, key_name: str) -> KeyFile:
         return KeyFile(
             path=os.path.join(self.folder, key_name + ".pem"),
@@ -63,7 +67,13 @@ class KeyFileManager:
 
     def create(self, name: str, material: str) -> KeyFile:
         key_file = self.key_file(name)
-        with open(key_file.path, mode="x", encoding="utf-8") as file:
+
+        with open(
+            key_file.path,
+            mode="x",
+            encoding="utf-8",
+            opener=self.open_as_600
+        ) as file:
             file.write(material)
         return key_file
 
