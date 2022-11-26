@@ -1,9 +1,9 @@
 BLUE=\033[0;34m
 NC=\033[0m # No Color
-pyned ?= python -m iac
+pyned ?= python -m ned
 
 run:
-	@python -m iac
+	@python -m ned
 
 test-unit:
 	@py.test

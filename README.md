@@ -49,7 +49,7 @@ application.
 To set up, first, we will need a place to store NED secrets.  Let's put that in our
 home directory.
 
-    mkdir -p $HOME/secrets/iac
+    mkdir -p $HOME/secrets/ned
 
 Next, you will need AWS credentials in a CSV. (Creating credentials for Amazon
 is well documented online or ask internally if you need a hand.) Here, we will
@@ -61,7 +61,7 @@ secrets folder (but not necessarily the NED secrets folder).  For example:
 Go to the NED project root and create a config on your system.  (Note that you
 may need to create some folders):
 
-    mkdir -p $HOME/.config/bky/iac
+    mkdir -p $HOME/.config/bky/ned
     python -m ned config > $HOME/.config/bky/ned/config.toml
 
 Be default, NED will look for the config file in
@@ -94,12 +94,12 @@ to set up security groups with code.
 
 ## Using NED
 
-The `iac` command provides (opinionated) tools for Nitro Enclave
+The `ned` command provides (opinionated) tools for Nitro Enclave
 Deployment (NED).  Some tools including key management, DNS, and
 setup/teardown of
 EC2 Nitro infrastructure.  If you only want to use the tool, you should
 still setup the config and secrets as described in the previous section. You can
-can install `iac` locally by running the following commands from the root
+can install `ned` locally by running the following commands from the root
 directory.
 
     poetry build

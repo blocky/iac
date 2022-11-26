@@ -1,7 +1,7 @@
 import pytest
 
 import ned
-from ned.iac import sample_config_file_name
+from ned.ned import sample_config_file_name
 
 
 def expected_config_from_fixture():
