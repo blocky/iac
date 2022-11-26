@@ -62,10 +62,10 @@ Go to the NED project root and create a config on your system.  (Note that you
 may need to create some folders):
 
     mkdir -p $HOME/.config/bky/iac
-    python -m ned config > $HOME/.config/bky/iac/config.toml
+    python -m ned config > $HOME/.config/bky/ned/config.toml
 
 Be default, NED will look for the config file in
-`$HOME/.config/bky/iac/config.toml`.
+`$HOME/.config/bky/ned/config.toml`.
 If you want to place the config in a different directory, you can set that location
 through in the environment variable `BKY_NED_CONFIG_FILE`.
 
@@ -78,7 +78,7 @@ that the values do not need to be the same nor do they need to be different.):
 
     [iac.aws]
     cred_file = /home/bob/secrets/aws--bob-dev.csv
-    secrets_folder = /home/bob/secrets/iac/
+    secrets_folder = /home/bob/secrets/ned/
     instance_name = "seq-dev--bob-dev"
     key_name = "seq-dev--bob-dev"
     region = "us-east-1"
