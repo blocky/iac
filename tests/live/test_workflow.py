@@ -58,14 +58,14 @@ class NEDRunner:
         return json.loads(output) if output and load_output else {}
 
 
-def test_ned_workflow__happy_path(pyiac):
+def test_ned_workflow__happy_path(pyned):
     # pylint: disable=too-many-statements
     # pylint: disable=too-many-locals
     key_name = "bky-ned-live-test-key"
     instance_name = "bky-ned-live-test-instance"
     fqdn = "bky-ned-live-test-host.bky.sh"
 
-    ned = NEDRunner(pyiac)
+    ned = NEDRunner(pyned)
 
     info("Check help commands")
     ned("deploy copy --help", load_output=False)

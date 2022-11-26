@@ -126,4 +126,4 @@ Tear down the infrastructure
 
 And you can even run the project's live tests using the installed version!
 
-    pytest --pyiac="ned" tests/live
+    pytest --pyned="ned" tests/live
