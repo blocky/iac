@@ -5,7 +5,7 @@ from pathlib import Path
 
 import click
 
-import iac
+import ned
 
 
 APP_DATA_PATH = resources.path("iac", "data")

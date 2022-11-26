@@ -1,7 +1,7 @@
 import pytest
 from pytest import raises
 
-import iac
+import ned
 from ned.aws import Credentials
 
 

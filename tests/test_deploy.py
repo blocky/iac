@@ -1,6 +1,6 @@
 from unittest.mock import patch, Mock
 
-import iac
+import ned
 
 
 @patch("fabric.Connection")

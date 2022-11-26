@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 from pytest import mark, raises
 
-import iac
+import ned
 
 
 @mark.parametrize(

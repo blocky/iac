@@ -1,6 +1,6 @@
 import pytest
 
-import iac
+import ned
 from ned.iac import sample_config_file_name
 
 

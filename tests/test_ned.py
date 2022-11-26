@@ -4,7 +4,7 @@ from unittest.mock import patch, Mock, ANY
 from pytest import mark
 from click.testing import CliRunner
 
-import iac
+import ned
 from ned import ned as app
 
 

@@ -7,7 +7,7 @@ import pytest
 import botocore.exceptions
 from dateutil.tz import tzutc
 
-import iac
+import ned
 
 NED_UNIT_TEST_FIXTURES_FILE_PATH = pathlib.Path(__file__).parent.joinpath("fixtures").resolve()
 

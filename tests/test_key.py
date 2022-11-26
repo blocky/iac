@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch, ANY
 
 from pytest import raises, mark
 
-import iac
+import ned
 
 
 class ExpectedUncaughtKeyException(Exception):

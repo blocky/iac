@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 from pytest import raises
 
-import iac
+import ned
 from ned.aws import DEPLOYMENT_TAG, SEQUENCER_TAG
 from ned.exception import NEDErrorCode
 from ned.key import NEDKeyWarning

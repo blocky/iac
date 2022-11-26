@@ -1,4 +1,4 @@
-from ned import iac
+from ned import ned
 
 
 def main():
