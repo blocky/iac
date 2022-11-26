@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "iac"
+name = "ned"
 version = "0.0.1"
 description = ""
 authors = ["BLOCKY <info@blocky.rocks>"]
 
 packages =  [
-    { include = "iac" }
+    { include = "ned" }
 ]
 
 [tool.poetry.scripts]

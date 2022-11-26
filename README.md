@@ -42,7 +42,7 @@ While you can run unit tests without configuring the NED, you will need to
 [Configure NED](#configuring-iac) to run `make test-live` (live tests) or use the
 application.
 
-<a name="configuring-iac"></a>
+<a name="configuring-ned"></a>
 ###  Configuring NED
 
 
@@ -126,4 +126,4 @@ Tear down the infrastructure
 
 And you can even run the project's live tests using the installed version!
 
-    pytest --pyiac="iac" tests/live
+    pytest --pyiac="ned" tests/live

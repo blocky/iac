@@ -8,8 +8,8 @@ import click
 import ned
 
 
-APP_DATA_PATH = resources.path("iac", "data")
-USER_DATA_PATH = join(Path.home(), ".config", "bky", "iac")
+APP_DATA_PATH = resources.path("ned", "data")
+USER_DATA_PATH = join(Path.home(), ".config", "bky", "ned")
 NED_CMD_KWARGS = {
     "obj": {},
     "auto_envvar_prefix": "BKY_NED",

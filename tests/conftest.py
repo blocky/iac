@@ -13,12 +13,12 @@ NED_UNIT_TEST_FIXTURES_FILE_PATH = pathlib.Path(__file__).parent.joinpath("fixtu
 
 
 def pytest_addoption(parser):
-    parser.addoption("--pyiac", action="store", default="python -m iac")
+    parser.addoption("--pyned", action="store", default="python -m ned")
 
 
 @pytest.fixture
 def pyiac(pytestconfig):
-    return pytestconfig.getoption("--pyiac")
+    return pytestconfig.getoption("--pyned")
 
 
 class AWSCannedResponses:
