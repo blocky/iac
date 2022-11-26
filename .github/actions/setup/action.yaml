@@ -1,5 +1,5 @@
 name: Setup
-description: Setup iac building
+description: Setup ned building
 
 runs:
   using: "composite"

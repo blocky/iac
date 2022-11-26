@@ -62,7 +62,7 @@ Go to the NED project root and create a config on your system.  (Note that you
 may need to create some folders):
 
     mkdir -p $HOME/.config/bky/iac
-    python -m iac config > $HOME/.config/bky/iac/config.toml
+    python -m ned config > $HOME/.config/bky/iac/config.toml
 
 Be default, NED will look for the config file in
 `$HOME/.config/bky/iac/config.toml`.
@@ -107,22 +107,22 @@ directory.
 
 And if all goes well, familiarize yourself with the command
 
-    iac --help
+    ned --help
 
 Create an EC2 instance described in the config file
 
-    iac key create
-    iac instance create
+    ned key create
+    ned instance create
 
 See installed infrastructure
 
-    iac key list
-    iac instance list
+    ned key list
+    ned instance list
 
 Tear down the infrastructure
 
-    iac key delete
-    iac instance terminate
+    ned key delete
+    ned instance terminate
 
 And you can even run the project's live tests using the installed version!
 

@@ -65,7 +65,7 @@ def test_iac_workflow__happy_path(pyiac):
     instance_name = "bky-iac-live-test-instance"
     fqdn = "bky-iac-live-test-host.bky.sh"
 
-    iac = NEDRunner(pyiac)
+    ned = NEDRunner(pyiac)
 
     info("Check help commands")
     iac("deploy copy --help", load_output=False)

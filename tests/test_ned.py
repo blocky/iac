@@ -5,7 +5,7 @@ from pytest import mark
 from click.testing import CliRunner
 
 import iac
-from iac import iac as app
+from ned import ned as app
 
 
 def run_app(*args, **kwargs):
@@ -13,7 +13,7 @@ def run_app(*args, **kwargs):
     # in the invocation of the click command
     # needs to be the same as in the invocation call.
     #
-    # For example, if __main__.py invokes the iac command as
+    # For example, if __main__.py invokes the ned command as
     #
     #   def main():
     #       iac.iac_cmd(obj={}, auto_envvar_prefix="BKY_NED")
