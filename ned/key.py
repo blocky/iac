@@ -8,14 +8,14 @@ import botocore.exceptions
 
 import iac.aws
 from iac.aws import DEPLOYMENT_TAG, SEQUENCER_TAG
-from iac.exception import IACWarning, IACError, IACErrorCode
+from iac.exception import NEDWarning, NEDError, NEDErrorCode
 
 
-class IACKeyError(IACError):
+class NEDKeyError(NEDError):
     pass
 
 
-class IACKeyWarning(IACWarning):
+class NEDKeyWarning(NEDWarning):
     pass
 
 
@@ -93,7 +93,7 @@ def describe_key_pairs(ec2: botocore.client.BaseClient, key_name: str = None) ->
         return ec2.describe_key_pairs(KeyNames=[key_name], Filters=filters)
     except botocore.exceptions.ClientError as exc:
         if exc.response["Error"]["Code"] == "InvalidKeyPair.NotFound":
-            raise IACKeyWarning(IACErrorCode.KEY_MISSING, pformat(exc.response)) from exc
+            raise NEDKeyWarning(NEDErrorCode.KEY_MISSING, pformat(exc.response)) from exc
         raise exc
 
 
@@ -118,7 +118,7 @@ def create_key_pair(
         )
     except botocore.exceptions.ClientError as exc:
         if exc.response["Error"]["Code"] == "InvalidKeyPair.Duplicate":
-            raise IACKeyWarning(IACErrorCode.KEY_DUPLICATE, pformat(exc.response)) from exc
+            raise NEDKeyWarning(NEDErrorCode.KEY_DUPLICATE, pformat(exc.response)) from exc
         raise exc
 
     kfm.create(key_name, res["KeyMaterial"])
@@ -134,8 +134,8 @@ def delete_key_pair(
     res = describe_key_pairs(ec2, key_name)
 
     if len(res["KeyPairs"]) != 1:
-        raise IACKeyError(
-            IACErrorCode.KEY_MISSING,
+        raise NEDKeyError(
+            NEDErrorCode.KEY_MISSING,
             f"Found not exactly one key {key_name} to delete",
         )
 
@@ -144,12 +144,12 @@ def delete_key_pair(
     try:
         res = describe_key_pairs(ec2, key_name)
         if len(res["KeyPairs"]) != 0:
-            raise IACKeyError(
-                IACErrorCode.KEY_DELETE_FAIL,
+            raise NEDKeyError(
+                NEDErrorCode.KEY_DELETE_FAIL,
                 f"Key '{key_name}' was not deleted",
             )
-    except IACKeyWarning as exc:
-        if exc.error_code != IACErrorCode.KEY_MISSING:
+    except NEDKeyWarning as exc:
+        if exc.error_code != NEDErrorCode.KEY_MISSING:
             raise exc
 
     kfm.delete(key_name)

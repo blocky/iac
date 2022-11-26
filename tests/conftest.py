@@ -9,7 +9,7 @@ from dateutil.tz import tzutc
 
 import iac
 
-IAC_UNIT_TEST_FIXTURES_FILE_PATH = pathlib.Path(__file__).parent.joinpath("fixtures").resolve()
+NED_UNIT_TEST_FIXTURES_FILE_PATH = pathlib.Path(__file__).parent.joinpath("fixtures").resolve()
 
 
 def pytest_addoption(parser):
@@ -1009,22 +1009,22 @@ def aws_parrot():
 @pytest.fixture
 def credential_file_name():
     file_name = "credentials_for_testing.csv"
-    return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
+    return os.path.join(NED_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
 
 
 @pytest.fixture
 def config_file_name():
     file_name = "config_for_testing.toml"
-    return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
+    return os.path.join(NED_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
 
 
 @pytest.fixture
 def config_file_with_no_creds_name():
     file_name = "config_with_no_creds.toml"
-    return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
+    return os.path.join(NED_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
 
 
 @pytest.fixture
 def config_file_invalid():
     file_name = "config_invalid.toml"
-    return os.path.join(IAC_UNIT_TEST_FIXTURES_FILE_PATH, file_name)
+    return os.path.join(NED_UNIT_TEST_FIXTURES_FILE_PATH, file_name)

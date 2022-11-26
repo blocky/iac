@@ -3,21 +3,21 @@ from dataclasses import dataclass
 
 import botocore.client
 
-from iac.exception import IACError, IACErrorCode
+from iac.exception import NEDError, NEDErrorCode
 
 
 def parse_domain_name(name: str, require_subdomain=True) -> (str, str):
     if len(name) > 0 and name[-1] == ".":
-        raise IACError(
-            IACErrorCode.DOMAIN_NAME_INVALID,
+        raise NEDError(
+            NEDErrorCode.DOMAIN_NAME_INVALID,
             f"Invalid domain name '{name}', trailing stop should be omitted",
         )
 
     tokens = name.split(".")
 
     if len(tokens) < 2:
-        raise IACError(
-            IACErrorCode.DOMAIN_NAME_INVALID,
+        raise NEDError(
+            NEDErrorCode.DOMAIN_NAME_INVALID,
             f"Invalid domain name '{name}'",
         )
 
@@ -25,8 +25,8 @@ def parse_domain_name(name: str, require_subdomain=True) -> (str, str):
     subdomain = ".".join(tokens[:-2]) if len(tokens) > 2 else None
 
     if subdomain is None and require_subdomain:
-        raise IACError(
-            IACErrorCode.DOMAIN_NAME_INVALID,
+        raise NEDError(
+            NEDErrorCode.DOMAIN_NAME_INVALID,
             f"Subdomain required but received '{name}'",
         )
 
@@ -91,15 +91,15 @@ class DNSManager:
 
         hosted_zones = response["HostedZones"]
         if len(hosted_zones) != 1:
-            raise IACError(
-                IACErrorCode.DOMAIN_NAME_INVALID,
+            raise NEDError(
+                NEDErrorCode.DOMAIN_NAME_INVALID,
                 f"Error getting host id from route 53 for '{fqdn}': '{response}'",
             )
 
         zone = HostedZone.from_aws(hosted_zones[0])
         if zone.fqdn != domain:
-            raise IACError(
-                IACErrorCode.DOMAIN_NAME_NOT_FOUND,
+            raise NEDError(
+                NEDErrorCode.DOMAIN_NAME_NOT_FOUND,
                 f"Error getting host id from route 53 for '{fqdn}'",
             )
 
@@ -107,8 +107,8 @@ class DNSManager:
 
     def change_a_record(self, operation: str, fqdn: str, ip_address: str) -> dict:
         if operation not in {"CREATE", "DELETE"}:
-            raise IACError(
-                IACErrorCode.DNS_INVALID_RECORD_OPERATION,
+            raise NEDError(
+                NEDErrorCode.DNS_INVALID_RECORD_OPERATION,
                 f"Invalid operation on an A record operation '{operation}'",
             )
 
@@ -149,8 +149,8 @@ class DNSManager:
         )
 
         if response["IsTruncated"]:
-            raise IACError(
-                IACErrorCode.DNS_UNEXPECTED_NUMBER_OF_RECORDS,
+            raise NEDError(
+                NEDErrorCode.DNS_UNEXPECTED_NUMBER_OF_RECORDS,
                 f"Number of records exceeded {max_items}",
             )
 
@@ -167,15 +167,15 @@ class DNSManager:
 
         record_sets = response["ResourceRecordSets"]
         if len(record_sets) != 1:
-            raise IACError(
-                IACErrorCode.DNS_UNEXPECTED_NUMBER_OF_RECORDS,
+            raise NEDError(
+                NEDErrorCode.DNS_UNEXPECTED_NUMBER_OF_RECORDS,
                 f"Expected 1 record for '{fqdn}' received {len(record_sets)}",
             )
 
         record = ResourceRecord.from_aws(record_sets[0])
         if fqdn != record.fqdn:
-            raise IACError(
-                IACErrorCode.DNS_RECORD_NOT_FOUND,
+            raise NEDError(
+                NEDErrorCode.DNS_RECORD_NOT_FOUND,
                 f"Did not find DNS Record for '{fqdn}'",
             )
 

@@ -2,7 +2,7 @@ from enum import Enum, unique, auto
 
 
 @unique
-class IACErrorCode(Enum):
+class NEDErrorCode(Enum):
     KEY_DELETE_FAIL = auto()
     KEY_DUPLICATE = auto()
     KEY_FILE_EXISTS = auto()
@@ -20,15 +20,15 @@ class IACErrorCode(Enum):
     DNS_UNEXPECTED_NUMBER_OF_RECORDS = auto()
 
 
-class IACException(Exception):
-    def __init__(self, error_code: IACErrorCode, message: str):
+class NEDException(Exception):
+    def __init__(self, error_code: NEDErrorCode, message: str):
         super().__init__(message)
         self.error_code = error_code
 
 
-class IACWarning(IACException):
+class NEDWarning(NEDException):
     pass
 
 
-class IACError(IACException):
+class NEDError(NEDException):
     pass

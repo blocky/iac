@@ -10,9 +10,9 @@ import iac
 
 APP_DATA_PATH = resources.path("iac", "data")
 USER_DATA_PATH = join(Path.home(), ".config", "bky", "iac")
-IAC_CMD_KWARGS = {
+NED_CMD_KWARGS = {
     "obj": {},
-    "auto_envvar_prefix": "BKY_IAC",
+    "auto_envvar_prefix": "BKY_NED",
 }
 
 

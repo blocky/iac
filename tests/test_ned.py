@@ -16,24 +16,24 @@ def run_app(*args, **kwargs):
     # For example, if __main__.py invokes the iac command as
     #
     #   def main():
-    #       iac.iac_cmd(obj={}, auto_envvar_prefix="BKY_IAC")
+    #       iac.iac_cmd(obj={}, auto_envvar_prefix="BKY_NED")
     #
     # We need to make sure that the `obj` and `auto_envvar_prefix` values are
     # the same in the CliRunner invocation:
     #
-    #   CliRunner().invoke(app.iac_cmd, ..., obj={}, auto_envvar_prefix="BKY_IAC")
+    #   CliRunner().invoke(app.iac_cmd, ..., obj={}, auto_envvar_prefix="BKY_NED")
     #
-    # To make our lives easier, we can use the IAC_CMD_KWARGS in both places.
+    # To make our lives easier, we can use the NED_CMD_KWARGS in both places.
     # So for example:
     #
     #   def main():
-    #       iac.iac_cmd(**iac.IAC_CMD_KWARGS)
+    #       iac.iac_cmd(**iac.NED_CMD_KWARGS)
     #
     # and
     #
-    #    CliRunner().invoke(app.iac_cmd, ..., **app.IAC_CMD_KWARGS)
+    #    CliRunner().invoke(app.iac_cmd, ..., **app.NED_CMD_KWARGS)
     return CliRunner().invoke(
-        app.iac_cmd, args, catch_exceptions=False, env=kwargs, **app.IAC_CMD_KWARGS
+        app.iac_cmd, args, catch_exceptions=False, env=kwargs, **app.NED_CMD_KWARGS
     )
 
 
@@ -344,14 +344,14 @@ def test_dbgconf__instance_sets_from_environment(config_file_name):
         f"--config-file={config_file_name}",
         "instance",
         "dbgconf",
-        BKY_IAC_ACCESS_KEY=access_key,
-        BKY_IAC_SECRET_KEY=secret_key,
-        BKY_IAC_CRED_FILE=cred_file_name,
-        BKY_IAC_REGION=region,
-        BKY_IAC_INSTANCE_INSTANCE_NAME=instance_name,
-        BKY_IAC_INSTANCE_KEY_NAME=key_name,
-        BKY_IAC_INSTANCE_SECURITY_GROUP=security_group,
-        BKY_IAC_INSTANCE_INSTANCE_KIND=instance_kind,
+        BKY_NED_ACCESS_KEY=access_key,
+        BKY_NED_SECRET_KEY=secret_key,
+        BKY_NED_CRED_FILE=cred_file_name,
+        BKY_NED_REGION=region,
+        BKY_NED_INSTANCE_INSTANCE_NAME=instance_name,
+        BKY_NED_INSTANCE_KEY_NAME=key_name,
+        BKY_NED_INSTANCE_SECURITY_GROUP=security_group,
+        BKY_NED_INSTANCE_INSTANCE_KIND=instance_kind,
     )
 
     assert result.exit_code == 0
@@ -416,12 +416,12 @@ def test_dbgconf__key_sets_from_environment(config_file_name):
         f"--config-file={config_file_name}",
         "key",
         "dbgconf",
-        BKY_IAC_ACCESS_KEY=access_key,
-        BKY_IAC_SECRET_KEY=secret_key,
-        BKY_IAC_CRED_FILE=cred_file_name,
-        BKY_IAC_REGION=region,
-        BKY_IAC_KEY_KEY_NAME=key_name,
-        BKY_IAC_KEY_SECRETS_FOLDER=secrets_folder,
+        BKY_NED_ACCESS_KEY=access_key,
+        BKY_NED_SECRET_KEY=secret_key,
+        BKY_NED_CRED_FILE=cred_file_name,
+        BKY_NED_REGION=region,
+        BKY_NED_KEY_KEY_NAME=key_name,
+        BKY_NED_KEY_SECRETS_FOLDER=secrets_folder,
     )
 
     assert result.exit_code == 0
@@ -492,13 +492,13 @@ def test_dbgconf__deploy_sets_from_environment(_m1, _m2, config_file_name):
         f"--config-file={config_file_name}",
         "deploy",
         "dbgconf",
-        BKY_IAC_ACCESS_KEY=access_key,
-        BKY_IAC_SECRET_KEY=secret_key,
-        BKY_IAC_CRED_FILE=cred_file_name,
-        BKY_IAC_REGION=region,
-        BKY_IAC_DEPLOY_INSTANCE_NAME=instance_name,
-        BKY_IAC_DEPLOY_KEY_NAME=key_name,
-        BKY_IAC_DEPLOY_SECRETS_FOLDER=secrets_folder,
+        BKY_NED_ACCESS_KEY=access_key,
+        BKY_NED_SECRET_KEY=secret_key,
+        BKY_NED_CRED_FILE=cred_file_name,
+        BKY_NED_REGION=region,
+        BKY_NED_DEPLOY_INSTANCE_NAME=instance_name,
+        BKY_NED_DEPLOY_KEY_NAME=key_name,
+        BKY_NED_DEPLOY_SECRETS_FOLDER=secrets_folder,
     )
     assert result.exit_code == 0
 
@@ -547,8 +547,8 @@ def test_dbgconf__dns_sets_from_environment(config_file_name):
         "--secret-key=secret",
         "dns",
         "dbgconf",
-        BKY_IAC_DNS_INSTANCE_NAME=instance_name,
-        BKY_IAC_DNS_FQDN=fqdn,
+        BKY_NED_DNS_INSTANCE_NAME=instance_name,
+        BKY_NED_DNS_FQDN=fqdn,
     )
     assert result.exit_code == 0
 

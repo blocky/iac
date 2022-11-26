@@ -4,8 +4,8 @@ from pytest import raises
 
 import iac
 from iac.aws import DEPLOYMENT_TAG, SEQUENCER_TAG
-from iac.exception import IACErrorCode
-from iac.key import IACKeyWarning
+from iac.exception import NEDErrorCode
+from iac.key import NEDKeyWarning
 
 
 class ExpectedUncaughtKeyInternalException(Exception):
@@ -48,9 +48,9 @@ def test_describe_key_pairs__key_not_found(aws_parrot):
 
     ec2.describe_key_pairs.side_effect = aws_parrot.key_not_found_error
 
-    with raises(IACKeyWarning) as exc_info:
+    with raises(NEDKeyWarning) as exc_info:
         iac.key.describe_key_pairs(ec2, aws_parrot.key_name)
-    assert exc_info.value.error_code == IACErrorCode.KEY_MISSING
+    assert exc_info.value.error_code == NEDErrorCode.KEY_MISSING
 
     ec2.describe_key_pairs.assert_called_once_with(
         KeyNames=[aws_parrot.key_name],

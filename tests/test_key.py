@@ -127,9 +127,9 @@ def test_create_key_pair__duplicate_key(aws_parrot):
 
     ec2.create_key_pair.side_effect = aws_parrot.create_key_pair_error
 
-    with raises(iac.IACKeyWarning) as exc_info:
+    with raises(iac.NEDKeyWarning) as exc_info:
         iac.create_key_pair(ec2, kfm, aws_parrot.key_name)
-    assert exc_info.value.error_code == iac.IACErrorCode.KEY_DUPLICATE
+    assert exc_info.value.error_code == iac.NEDErrorCode.KEY_DUPLICATE
 
     ec2.create_key_pair.assert_called_once_with(
         KeyName=aws_parrot.key_name,
@@ -188,7 +188,7 @@ def test_delete_key_pair__happy_path(mock_describe_key_pairs, aws_parrot):
 
     mock_describe_key_pairs.side_effect = [
         aws_parrot.describe_key_pairs__one_key,
-        iac.IACKeyWarning(error_code=iac.IACErrorCode.KEY_MISSING, message=""),
+        iac.NEDKeyWarning(error_code=iac.NEDErrorCode.KEY_MISSING, message=""),
     ]
 
     ret = iac.delete_key_pair(ec2, kfm, aws_parrot.key_name)
@@ -229,14 +229,14 @@ def test_delete_key_pair__key_does_not_exist(
     kfm = Mock()
     ec2 = Mock()
 
-    mock_describe_key_pairs.side_effect = iac.IACKeyWarning(
-        iac.IACErrorCode.KEY_MISSING,
+    mock_describe_key_pairs.side_effect = iac.NEDKeyWarning(
+        iac.NEDErrorCode.KEY_MISSING,
         aws_parrot.key_not_found_error,
     )
 
-    with raises(iac.IACKeyWarning) as exc_info:
+    with raises(iac.NEDKeyWarning) as exc_info:
         iac.delete_key_pair(ec2, kfm, aws_parrot.key_name)
-    assert exc_info.value.error_code == iac.IACErrorCode.KEY_MISSING
+    assert exc_info.value.error_code == iac.NEDErrorCode.KEY_MISSING
 
     mock_describe_key_pairs.assert_called_once_with(ec2, aws_parrot.key_name)
     ec2.delete_key_pair.assert_not_called()
@@ -253,9 +253,9 @@ def test_delete_key_pair__not_exactly_one_key_pair_found(
 
     mock_describe_key_pairs.return_value = aws_parrot.describe_key_pairs__no_keys
 
-    with raises(iac.IACKeyError) as exc_info:
+    with raises(iac.NEDKeyError) as exc_info:
         iac.delete_key_pair(ec2, kfm, aws_parrot.key_name)
-    assert exc_info.value.error_code == iac.IACErrorCode.KEY_MISSING
+    assert exc_info.value.error_code == iac.NEDErrorCode.KEY_MISSING
 
     mock_describe_key_pairs.assert_called_once_with(ec2, aws_parrot.key_name)
     ec2.delete_key_pair.assert_not_called()
@@ -297,9 +297,9 @@ def test_delete_key_pair__cloud_delete_error(
         aws_parrot.describe_key_pairs__one_key,
     ]
 
-    with raises(iac.IACKeyError) as exc_info:
+    with raises(iac.NEDKeyError) as exc_info:
         iac.delete_key_pair(ec2, kfm, aws_parrot.key_name)
-    assert exc_info.value.error_code == iac.IACErrorCode.KEY_DELETE_FAIL
+    assert exc_info.value.error_code == iac.NEDErrorCode.KEY_DELETE_FAIL
 
     mock_describe_key_pairs.assert_called_with(ec2, aws_parrot.key_name)
     ec2.delete_key_pair.assert_called_once_with(KeyName=aws_parrot.key_name)

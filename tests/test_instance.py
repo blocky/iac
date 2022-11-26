@@ -12,9 +12,9 @@ class ExpectedUncaughtInstanceException(Exception):
 def test_instace_kind__from_str():
     assert iac.InstanceKind.from_str("standard") == iac.InstanceKind.STANDARD
     assert iac.InstanceKind.from_str("nitro") == iac.InstanceKind.NITRO
-    with raises(iac.IACInstanceError) as e:
+    with raises(iac.NEDInstanceError) as e:
         iac.InstanceKind.from_str("not-a-kind")
-    assert e.value.error_code == iac.IACErrorCode.INSTANCE_UNKNOWN_KIND
+    assert e.value.error_code == iac.NEDErrorCode.INSTANCE_UNKNOWN_KIND
     assert "Cannot create instance kind from" in str(e.value)
 
 
@@ -247,7 +247,7 @@ def test_create_instance__instance_already_exists(
 
     mock_describe_instances.return_value = [aws_parrot.instance]
 
-    with raises(iac.IACInstanceWarning) as exc_info:
+    with raises(iac.NEDInstanceWarning) as exc_info:
         iac.create_instance(
             ec2,
             iac.InstanceKind.NITRO,
@@ -255,7 +255,7 @@ def test_create_instance__instance_already_exists(
             aws_parrot.key_name,
             aws_parrot.security_group,
         )
-    assert exc_info.value.error_code == iac.IACErrorCode.INSTANCE_DUPLICATE
+    assert exc_info.value.error_code == iac.NEDErrorCode.INSTANCE_DUPLICATE
 
     mock_describe_instances.assert_called_once_with(ec2, aws_parrot.instance_name)
     ec2.run_instances.assert_not_called()
@@ -313,10 +313,10 @@ def test_terminate_instance__instance_not_running(mock_describe_instances):
     mock_describe_instances.return_value = []
 
     instance_name = "instance_name"
-    with raises(iac.IACInstanceWarning) as exc_info:
+    with raises(iac.NEDInstanceWarning) as exc_info:
         iac.terminate_instance(ec2, instance_name)
 
-    assert exc_info.value.error_code == iac.IACErrorCode.INSTANCE_MISSING
+    assert exc_info.value.error_code == iac.NEDErrorCode.INSTANCE_MISSING
     mock_describe_instances.assert_called_once_with(ec2, instance_name)
     ec2.terminate_instances.assert_not_called()
 
@@ -345,9 +345,9 @@ def test_terminate_instance__name_collision(mock_describe_instances):
     instance = iac.Instance(name=instance_name, state="running")
     mock_describe_instances.return_value = [instance] * 2
 
-    with raises(iac.IACInstanceError) as exc_info:
+    with raises(iac.NEDInstanceError) as exc_info:
         iac.terminate_instance(ec2, instance_name)
-    assert exc_info.value.error_code == iac.IACErrorCode.INSTANCE_NAME_COLLISION
+    assert exc_info.value.error_code == iac.NEDErrorCode.INSTANCE_NAME_COLLISION
 
     mock_describe_instances.assert_called_once_with(ec2, instance_name)
     ec2.terminate_instances.assert_not_called()
@@ -378,9 +378,9 @@ def test_terminate_instance__still_running(mock_describe_instances, aws_parrot):
     instance = iac.Instance(name="a", state="running", id="a_id")
     mock_describe_instances.return_value = [instance]
 
-    with raises(iac.IACInstanceError) as exc_info:
+    with raises(iac.NEDInstanceError) as exc_info:
         iac.terminate_instance(ec2, instance.name)
-    assert exc_info.value.error_code == iac.IACErrorCode.INSTANCE_TERMINATION_FAIL
+    assert exc_info.value.error_code == iac.NEDErrorCode.INSTANCE_TERMINATION_FAIL
 
     mock_describe_instances.assert_called_once_with(ec2, instance.name)
     ec2.terminate_instances.assert_called_once_with(InstanceIds=[instance.id])
@@ -420,10 +420,10 @@ def test_fetch_instance__no_instance(mock_describe_instances):
     mock_describe_instances.return_value = []
 
     instance_name = "instance_name"
-    with raises(iac.IACInstanceWarning) as exc_info:
+    with raises(iac.NEDInstanceWarning) as exc_info:
         iac.fetch_instance(ec2, instance_name)
 
-    assert exc_info.value.error_code == iac.IACErrorCode.INSTANCE_MISSING
+    assert exc_info.value.error_code == iac.NEDErrorCode.INSTANCE_MISSING
     mock_describe_instances.assert_called_once_with(ec2, instance_name)
 
 
@@ -435,10 +435,10 @@ def test_fetch_instance__many_instances(mock_describe_instances):
     instance = iac.Instance(name=instance_name, state="running")
     mock_describe_instances.return_value = [instance] * 3
 
-    with raises(iac.IACInstanceError) as exc_info:
+    with raises(iac.NEDInstanceError) as exc_info:
         iac.fetch_instance(ec2, instance_name)
 
-    assert exc_info.value.error_code == iac.IACErrorCode.INSTANCE_NAME_COLLISION
+    assert exc_info.value.error_code == iac.NEDErrorCode.INSTANCE_NAME_COLLISION
     mock_describe_instances.assert_called_once_with(ec2, instance_name)
 
 
@@ -478,9 +478,9 @@ def test_instance_running_barrier_wait_instace_stuck_pending(
     pending = iac.Instance(name="inst", state="pending")
     mock_fetch_instance.side_effect = [pending, pending]
 
-    with raises(iac.IACInstanceError) as exc_info:
+    with raises(iac.NEDInstanceError) as exc_info:
         iac.instance.InstanceRunningBarrier(ec2, 0, 2).wait(pending)
 
-    assert exc_info.value.error_code == iac.IACErrorCode.INSTANCE_NOT_RUNNING
+    assert exc_info.value.error_code == iac.NEDErrorCode.INSTANCE_NOT_RUNNING
     assert mock_fetch_instance.call_count == 2
     ec2.assert_not_called()
