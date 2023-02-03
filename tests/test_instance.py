@@ -532,6 +532,27 @@ def test_instance_ready_barrier_wait_host_lookup_error(
     ec2.assert_not_called()
 
 
+@patch("socket.gethostbyname")
+def test_instance_ready_barrier_wait_wrong_ip(
+    mock_gethostbyname,
+):
+    ec2 = Mock()
+
+    running = ned.Instance(
+        name="inst",
+        state="running",
+        public_dns_name="instance.bky.sh",
+        public_ip_address="1.1.1.1"
+    )
+    mock_gethostbyname.side_effect = ["2.2.2.2"]
+
+    with raises(ned.NEDInstanceError) as exc_info:
+        ned.instance.InstanceReadyBarrier(ec2, 0, 0).wait(running)
+
+    assert exc_info.value.error_code == ned.NEDErrorCode.INSTANCE_NOT_READY
+    ec2.assert_not_called()
+
+
 @patch("ned.instance.InstanceReadyBarrier._ping")
 @patch("socket.gethostbyname")
 def test_instance_ready_barrier_wait_ping_error(
