@@ -1,3 +1,4 @@
+import socket
 from unittest.mock import Mock, patch
 
 from pytest import raises, mark
@@ -442,35 +443,59 @@ def test_fetch_instance__many_instances(mock_describe_instances):
     mock_describe_instances.assert_called_once_with(ec2, instance_name)
 
 
-def test_instance_running_barrier_wait_instance_ok_from_start():
+@patch("ned.instance.InstanceReadyBarrier._ping")
+@patch("socket.gethostbyname")
+def test_instance_ready_barrier_wait_instance_ok_from_start(
+    mock_gethostbyname,
+    mock_ping,
+):
     ec2 = Mock()
 
-    running = ned.Instance(name="inst", state="running")
-    got = ned.instance.InstanceRunningBarrier(ec2, 0, 2).wait(running)
+    mock_gethostbyname.side_effect = ["1.1.1.1"]
+    mock_ping.side_effect = [True]
+
+    running = ned.Instance(
+        name="inst",
+        state="running",
+        public_dns_name="instance.bky.sh",
+        public_ip_address="1.1.1.1"
+    )
+    got = ned.instance.InstanceReadyBarrier(ec2, 0, 0).wait(running)
 
     assert got == running
     ec2.assert_not_called()
 
 
+@patch("ned.instance.InstanceReadyBarrier._ping")
+@patch("socket.gethostbyname")
 @patch("ned.instance.fetch_instance")
-def test_instance_running_barrier_wait_instance_ok_after_retry(
+def test_instance_ready_barrier_wait_instance_ok_after_retry(
     mock_fetch_instance,
+    mock_gethostbyname,
+    mock_ping,
 ):
     ec2 = Mock()
 
     pending = ned.Instance(name="inst", state="pending")
-    running = ned.Instance(name="inst", state="running")
-    mock_fetch_instance.side_effect = [pending, running]
+    running = ned.Instance(
+        name="inst",
+        state="running",
+        public_dns_name="instance.bky.sh",
+        public_ip_address="1.1.1.1"
+    )
+    mock_fetch_instance.side_effect = [running]
+    mock_gethostbyname.side_effect = ["1.1.1.1"]
+    mock_ping.side_effect = [True]
 
-    got = ned.instance.InstanceRunningBarrier(ec2, 0, 2).wait(pending)
+    got = ned.instance.InstanceReadyBarrier(ec2, 0, 1).wait(pending)
 
     assert got == running
-    assert mock_fetch_instance.call_count == 2
+    assert mock_fetch_instance.call_count == 1
     ec2.assert_not_called()
 
 
 @patch("ned.instance.fetch_instance")
-def test_instance_running_barrier_wait_instace_stuck_pending(
+def test_instance_ready_barrier_wait_instance_stuck_pending(
     mock_fetch_instance,
 ):
     ec2 = Mock()
@@ -479,8 +504,53 @@ def test_instance_running_barrier_wait_instace_stuck_pending(
     mock_fetch_instance.side_effect = [pending, pending]
 
     with raises(ned.NEDInstanceError) as exc_info:
-        ned.instance.InstanceRunningBarrier(ec2, 0, 2).wait(pending)
+        ned.instance.InstanceReadyBarrier(ec2, 0, 2).wait(pending)
 
-    assert exc_info.value.error_code == ned.NEDErrorCode.INSTANCE_NOT_RUNNING
+    assert exc_info.value.error_code == ned.NEDErrorCode.INSTANCE_NOT_READY
     assert mock_fetch_instance.call_count == 2
+    ec2.assert_not_called()
+
+
+@patch("socket.gethostbyname")
+def test_instance_ready_barrier_wait_host_lookup_error(
+    mock_gethostbyname,
+):
+    ec2 = Mock()
+
+    running = ned.Instance(
+        name="inst",
+        state="running",
+        public_dns_name="instance.bky.sh",
+        public_ip_address="1.1.1.1"
+    )
+    mock_gethostbyname.side_effect = [socket.gaierror]
+
+    with raises(ned.NEDInstanceError) as exc_info:
+        ned.instance.InstanceReadyBarrier(ec2, 0, 0).wait(running)
+
+    assert exc_info.value.error_code == ned.NEDErrorCode.INSTANCE_NOT_READY
+    ec2.assert_not_called()
+
+
+@patch("ned.instance.InstanceReadyBarrier._ping")
+@patch("socket.gethostbyname")
+def test_instance_ready_barrier_wait_ping_error(
+    mock_gethostbyname,
+    mock_ping,
+):
+    ec2 = Mock()
+
+    mock_gethostbyname.side_effect = ["1.1.1.1"]
+    mock_ping.side_effect = [False]
+
+    running = ned.Instance(
+        name="inst",
+        state="running",
+        public_dns_name="instance.bky.sh",
+        public_ip_address="1.1.1.1"
+    )
+    with raises(ned.NEDInstanceError) as exc_info:
+        ned.instance.InstanceReadyBarrier(ec2, 0, 0).wait(running)
+
+    assert exc_info.value.error_code == ned.NEDErrorCode.INSTANCE_NOT_READY
     ec2.assert_not_called()

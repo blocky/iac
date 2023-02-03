@@ -1,12 +1,11 @@
 import json
-from os.path import join
 from importlib import resources
+from os.path import join
 from pathlib import Path
 
 import click
 
 import ned
-
 
 APP_DATA_PATH = resources.path("ned", "data")
 USER_DATA_PATH = join(Path.home(), ".config", "bky", "ned")
@@ -181,7 +180,7 @@ def instance_create_cmd(ctx):
         conf.instance_name,
         conf.key_name,
         conf.security_group,
-        ned.instance.InstanceRunningBarrier(client.ec2),
+        ned.instance.InstanceReadyBarrier(client.ec2),
     )
     console(instance, to_dict=ned.Instance.to_dict)
 

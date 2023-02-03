@@ -9,7 +9,7 @@ class NEDErrorCode(Enum):
     KEY_MISSING = auto()
     INSTANCE_DUPLICATE = auto()
     INSTANCE_NAME_COLLISION = auto()
-    INSTANCE_NOT_RUNNING = auto()
+    INSTANCE_NOT_READY = auto()
     INSTANCE_MISSING = auto()
     INSTANCE_TERMINATION_FAIL = auto()
     INSTANCE_UNKNOWN_KIND = auto()

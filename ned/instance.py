@@ -1,9 +1,10 @@
-import time
+import socket
+import subprocess
 import sys
+import time
 from dataclasses import dataclass
-from typing import TypeVar
 from enum import Enum
-
+from typing import TypeVar
 
 import botocore.client
 
@@ -150,42 +151,66 @@ def _ec2_config(
     return definition
 
 
-class Barrier:
+class InstanceBarrier:
     def wait(self, inst: Instance) -> Instance:
         return inst
 
 
 @dataclass(frozen=True)
-class InstanceRunningBarrier(Barrier):
+class InstanceReadyBarrier(InstanceBarrier):
     ec2: botocore.client.BaseClient
-    sleep_time: float = 10
-    retry_count: int = 9
+    sleep_time: float = 5
+    retry_count: int = 20
 
-    def _is_running(self, inst: Instance) -> bool:
-        return inst.state == "running"
+    def _is_ready(self, inst: Instance) -> bool:
+        if inst.state != "running":
+            self._warn(f'Instance state is "{inst.state}", waiting for "running"')
+            return False
+
+        try:
+            resolved_ip = socket.gethostbyname(inst.public_dns_name)
+        except socket.gaierror as exc:
+            self._warn(f"Host lookup error: {exc}")
+            return False
+
+        if inst.public_ip_address != resolved_ip:
+            self._warn(
+                f"Instance resolved IP is {resolved_ip}, " f"but should be {inst.public_ip_address}"
+            )
+            return False
+
+        if not self._ping(inst.public_ip_address):
+            self._warn(f"Cannot ping {inst.public_ip_address}")
+            return False
+
+        return True
+
+    def _ping(self, host: str):
+        command = f"ping -c 1 {host} > /dev/null"
+        return subprocess.run(command, shell=True).returncode == 0
 
     def _warn(self, msg: str, out=sys.stderr) -> None:
         out.write(f"**Warning** {msg}\n")
 
     def wait(self, inst: Instance) -> Instance:
-        running_inst = inst if self._is_running(inst) else None
+        ready = self._is_ready(inst)
 
         remaining_attempts = self.retry_count
-        while not running_inst and remaining_attempts > 0:
+        while not ready and remaining_attempts > 0:
             n = self.retry_count  # pylint: disable = invalid-name
             k = n - remaining_attempts + 1
-            self._warn(f"Instance is pending, checking again {k}/{n}")
+            self._warn(f"Checking again {k}/{n}")
             time.sleep(self.sleep_time)
             inst = fetch_instance(self.ec2, inst.name)
-            running_inst = inst if self._is_running(inst) else None
+            ready = self._is_ready(inst)
             remaining_attempts -= 1
 
-        if not running_inst:
+        if not ready:
             raise NEDInstanceError(
-                NEDErrorCode.INSTANCE_NOT_RUNNING,
-                f"Instance not running, still in {inst.state}",
+                NEDErrorCode.INSTANCE_NOT_READY,
+                f"Instance is not ready",
             )
-        return running_inst
+        return inst
 
 
 def create_instance(
@@ -194,7 +219,7 @@ def create_instance(
     instance_name: str,
     key_name: str,
     security_group: str,
-    barrier: Barrier = Barrier(),
+    barrier: InstanceBarrier = InstanceBarrier(),
 ) -> Instance:
     # pylint: disable = too-many-arguments
     instances = describe_instances(ec2, instance_name)
@@ -211,7 +236,10 @@ def create_instance(
     return barrier.wait(inst)
 
 
-def terminate_instance(ec2: botocore.client.BaseClient, instance_name: str) -> Instance:
+def terminate_instance(
+    ec2: botocore.client.BaseClient,
+    instance_name: str,
+) -> Instance:
     instances = describe_instances(ec2, instance_name)
     _validate_running(instances, instance_name)
     _validate_not_multiple(instances, instance_name)
@@ -232,7 +260,10 @@ def list_instances(ec2: botocore.client.BaseClient) -> [Instance]:
     return describe_instances(ec2)
 
 
-def fetch_instance(ec2: botocore.client.BaseClient, instance_name: str) -> Instance:
+def fetch_instance(
+    ec2: botocore.client.BaseClient,
+    instance_name: str,
+) -> Instance:
     instances = describe_instances(ec2, instance_name)
     _validate_running(instances, instance_name)
     _validate_not_multiple(instances, instance_name)
