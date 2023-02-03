@@ -303,7 +303,7 @@ def dns_cmd_create(ctx):
 
 @click.command(name="list")
 @click.pass_context
-def dns_cmd_describe(ctx):
+def dns_cmd_list(ctx):
     fail_on_debug(ctx)
 
     conf = ctx.obj["conf"]
@@ -316,7 +316,7 @@ def dns_cmd_describe(ctx):
 
 @click.command(name="describe")
 @click.pass_context
-def dns_cmd_list(ctx):
+def dns_cmd_describe(ctx):
     fail_on_debug(ctx)
 
     conf = ctx.obj["conf"]
