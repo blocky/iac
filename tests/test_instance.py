@@ -10,7 +10,7 @@ class ExpectedUncaughtInstanceException(Exception):
     pass
 
 
-def test_instace_kind__from_str():
+def test_instance_kind__from_str():
     assert ned.InstanceKind.from_str("standard") == ned.InstanceKind.STANDARD
     assert ned.InstanceKind.from_str("nitro") == ned.InstanceKind.NITRO
     with raises(ned.NEDInstanceError) as e:
@@ -455,10 +455,7 @@ def test_instance_ready_barrier_wait_instance_ok_from_start(
     mock_ping.side_effect = [True]
 
     running = ned.Instance(
-        name="inst",
-        state="running",
-        public_dns_name="instance.bky.sh",
-        public_ip_address="1.1.1.1"
+        name="inst", state="running", public_dns_name="instance.bky.sh", public_ip_address="1.1.1.1"
     )
     got = ned.instance.InstanceReadyBarrier(ec2, 0, 0).wait(running)
 
@@ -478,10 +475,7 @@ def test_instance_ready_barrier_wait_instance_ok_after_retry(
 
     pending = ned.Instance(name="inst", state="pending")
     running = ned.Instance(
-        name="inst",
-        state="running",
-        public_dns_name="instance.bky.sh",
-        public_ip_address="1.1.1.1"
+        name="inst", state="running", public_dns_name="instance.bky.sh", public_ip_address="1.1.1.1"
     )
     mock_fetch_instance.side_effect = [running]
     mock_gethostbyname.side_effect = ["1.1.1.1"]
@@ -518,10 +512,7 @@ def test_instance_ready_barrier_wait_host_lookup_error(
     ec2 = Mock()
 
     running = ned.Instance(
-        name="inst",
-        state="running",
-        public_dns_name="instance.bky.sh",
-        public_ip_address="1.1.1.1"
+        name="inst", state="running", public_dns_name="instance.bky.sh", public_ip_address="1.1.1.1"
     )
     mock_gethostbyname.side_effect = [socket.gaierror]
 
@@ -539,10 +530,7 @@ def test_instance_ready_barrier_wait_wrong_ip(
     ec2 = Mock()
 
     running = ned.Instance(
-        name="inst",
-        state="running",
-        public_dns_name="instance.bky.sh",
-        public_ip_address="1.1.1.1"
+        name="inst", state="running", public_dns_name="instance.bky.sh", public_ip_address="1.1.1.1"
     )
     mock_gethostbyname.side_effect = ["2.2.2.2"]
 
@@ -565,10 +553,7 @@ def test_instance_ready_barrier_wait_ping_error(
     mock_ping.side_effect = [False]
 
     running = ned.Instance(
-        name="inst",
-        state="running",
-        public_dns_name="instance.bky.sh",
-        public_ip_address="1.1.1.1"
+        name="inst", state="running", public_dns_name="instance.bky.sh", public_ip_address="1.1.1.1"
     )
     with raises(ned.NEDInstanceError) as exc_info:
         ned.instance.InstanceReadyBarrier(ec2, 0, 0).wait(running)

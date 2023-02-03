@@ -1,5 +1,5 @@
 import socket
-import subprocess
+import subprocess  # nosec
 import sys
 import time
 from dataclasses import dataclass
@@ -186,8 +186,9 @@ class InstanceReadyBarrier(InstanceBarrier):
         return True
 
     def _ping(self, host: str):
-        command = f"ping -c 1 {host} > /dev/null"
-        return subprocess.run(command, shell=True).returncode == 0
+        command = ["ping", "-c", "1", host]
+        # allow ping through subprocess with nosec
+        return subprocess.call(command, stdout=subprocess.DEVNULL) == 0  # nosec
 
     def _warn(self, msg: str, out=sys.stderr) -> None:
         out.write(f"**Warning** {msg}\n")
@@ -208,7 +209,7 @@ class InstanceReadyBarrier(InstanceBarrier):
         if not ready:
             raise NEDInstanceError(
                 NEDErrorCode.INSTANCE_NOT_READY,
-                f"Instance is not ready",
+                "Instance is not ready",
             )
         return inst
 
