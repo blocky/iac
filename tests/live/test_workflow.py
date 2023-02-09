@@ -4,7 +4,8 @@ import random
 import string
 import subprocess
 import tempfile
-import time
+from subprocess import CompletedProcess
+from typing import Any
 
 import pytest
 
@@ -19,7 +20,14 @@ def warn(msg):
     LOGGER.warning(msg)
 
 
-def run(cmd, log_cmd=False) -> dict:
+def error(msg):
+    LOGGER.error(msg)
+
+
+def run(
+    cmd,
+    log_cmd=False,
+) -> CompletedProcess[Any] | CompletedProcess[bytes] | CompletedProcess[str]:
     if log_cmd:
         info("  running:" + cmd)
 
@@ -53,6 +61,9 @@ class NEDRunner:
                 ]
             )
             pytest.fail(msg)
+
+        if proc.stderr:
+            warn(proc.stderr)
 
         output = proc.stdout
         return json.loads(output) if output and load_output else {}
@@ -131,9 +142,6 @@ def test_ned_workflow__happy_path(pyned):
     info("Checking DNS record creation")
     record = ned(f"dns --fqdn={fqdn} describe")
     assert fqdn == record["fqdn"]
-
-    info("Giving the system some time to startup")
-    time.sleep(30)
 
     with tempfile.NamedTemporaryFile(prefix="bky-ned-") as tmp:
         junk = "".join(random.choices(string.ascii_lowercase, k=5))
