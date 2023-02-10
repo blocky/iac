@@ -131,6 +131,18 @@ def key_list_cmd(ctx):
     console(keys, to_dict=ned.Key.to_dict)
 
 
+@click.command(name="list-names")
+@click.pass_context
+def key_list_names_cmd(ctx):
+    fail_on_debug(ctx)
+
+    client = ctx.obj["client"]
+
+    keys = ned.list_key_pairs(client.ec2)
+    names = [k.name for k in keys]
+    console(names)
+
+
 @click.command(name="dbgconf")
 @click.pass_context
 def x_dbgconf_cmd(ctx):
@@ -143,6 +155,7 @@ ned_cmd.add_command(key_cmd)
 key_cmd.add_command(key_create_cmd)
 key_cmd.add_command(key_delete_cmd)
 key_cmd.add_command(key_list_cmd)
+key_cmd.add_command(key_list_names_cmd)
 key_cmd.add_command(x_dbgconf_cmd)
 
 
@@ -208,10 +221,23 @@ def instance_list_cmd(ctx):
     console(instances, to_dict=ned.Instance.to_dict)
 
 
+@click.command(name="list-names")
+@click.pass_context
+def instance_list_names_cmd(ctx):
+    fail_on_debug(ctx)
+
+    client = ctx.obj["client"]
+
+    instances = ned.list_instances(client.ec2)
+    names = [i.name for i in instances]
+    console(names)
+
+
 ned_cmd.add_command(instance_cmd)
 instance_cmd.add_command(instance_create_cmd)
 instance_cmd.add_command(instance_terminate_cmd)
 instance_cmd.add_command(instance_list_cmd)
+instance_cmd.add_command(instance_list_names_cmd)
 instance_cmd.add_command(x_dbgconf_cmd)
 
 
