@@ -1,0 +1,30 @@
+- name: Setup enclave
+  hosts: all
+  become: yes
+  tasks:
+    - name: Enable and install nitro tools
+      command: amazon-linux-extras install aws-nitro-enclaves-cli -y
+
+    - name: Install packages
+      yum:
+        name: aws-nitro-enclaves-cli-devel
+        state: present
+
+    - name: Set the enclave memory allocation
+      replace:
+        path: /etc/nitro_enclaves/allocator.yaml
+        regexp: 'memory_mib: [0-9]+'
+        replace: 'memory_mib: 3072'
+
+    - name: Get the current username
+      command: whoami
+      register: current_user
+
+    - name: Add the user to the nitro enclave group
+      command: usermod -aG ne "{{ current_user.stdout }}"
+      register: current_user
+
+    - name: Start nitro services
+      shell: |
+        systemctl start nitro-enclaves-allocator.service
+        systemctl enable nitro-enclaves-allocator.service 2>/dev/null
