@@ -1,0 +1,13 @@
+- name: Setup Nix
+  hosts: all
+  tasks:
+
+    - name: Download Nix installer
+      get_url:
+        url: https://nixos.org/nix/install
+        dest: /tmp/install-nix.sh
+
+    - name: Run Nix installer
+      command: /bin/bash /tmp/install-nix.sh --no-daemon
+      args:
+        creates: /nix
