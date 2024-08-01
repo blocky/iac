@@ -1,129 +1,129 @@
 # NED
 
-A tool for setting up nitro on AWS
+NED is short for Newman's Environment for Development and is a nod to the
+great computer programmer Dennis Nedry.
 
-## Setting up for development
+This project is a tool for helping with setting up development and test
+environments for Newman specifically on AWS and maybe other cloud providers
+in the future.
 
-Following [this
-guide](https://ealizadeh.com/blog/guide-to-python-env-pkg-dependency-using-conda-poetry),
-this project uses Conda for environment management, pip as the package
-installer, and Poetry as the dependency manager.
+## Getting started
 
-Install [Miniconda3](https://docs.conda.io/en/latest/miniconda.html#linux-installers).
+This tool is intended to help you manage your own development environment(s)
+and not be used for managing standing infrastructure.  As such, you will
+probably want to fork this repo, make it your own, and maybe contribute some
+tools back if they are more generally useful.
 
-    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-    bash Miniconda3-latest-Linux-x86_64.sh
+It uses:
+- [terraform](https://www.terraform.io/) (tested with v 1.9.3)
+- [ansible](https://www.ansible.com/) (tested with v 2.10.8)
 
-Install [Mamba](https://github.com/mamba-org/mamba) to speed up environment building
+To get started, fork and clone the repo.
 
-    conda install mamba -n base -c conda-forge
+Next, you will want to create a configuration for the infrastructure that
+you would like to run.  To do so, create a file `terraform/main.tf` that
+describes your development infrastructure.  A good starting point
+for a `main.tf` is:
 
-From the base environment, create and activate (update) a Python environment
-specified in `environment.yaml`
+```hcl
+terraform {
+  required_version = ">= 1.7.0"
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "5.58.0"
+    }
+  }
+}
 
-    mamba env update -n bky-ned -f environment.yaml
-    conda activate bky-ned
+provider "aws" {
+  # Note: Not all nitro-enabled instance types or amis are available in all regions. For now, use `us-east-1` to ensure compatibility with the module.
+  region = "us-east-1"
+}
 
-Install all the python dependencies
+# You can change the name of the module to be unique if you include multiple instances of this module in your main.tf file.
+module "nitro_dev" {
+  source = "./modules/nitro"
 
-    poetry install
+  # Change the following to your own values
+  instance_name = "an-instance-name"
+  key_pair_name = "your-key-pair-name"
+}
 
-Make sure that everything is set up properly for development by running:
+output "nitro_dev_instance_ip" {
+  description = "The public IP address of the instance"
+  value = module.nitro_dev.instance_public_ip
+}
+```
 
-    make test
+For the "key_pair_name", you will need to have a key pair already created in
+AWS and the private key on your local machine.  Below, we will refer to the
+location of this key on your local machine as `<path-to-your-pem-file>`.
 
-When you want to clean up run:
+You will likely want to create an output with the ip address of the
+instance that is created so that you can use it later in Ansible playbooks.
 
-    conda deactivate
-    conda remove -n sequencer --all
-    make veryclean
+Let's create the infrastructure.
 
-While you can run unit tests without configuring the NED, you will need to
-[Configure NED](#configuring-ned) to run `make test-live` (live tests) or use the
-application.
+```bash
+cd terraform
+terraform init
+terraform validate
+terraform apply
+```
 
-<a name="configuring-ned"></a>
-###  Configuring NED
+Upon successful completion of the `apply` you will see the ip address of the
+instance that was created. You can copy it for later or put it into an
+environment variable like so:
+
+```bash
+instance_ip=$(terraform output -raw nitro_dev_instance_ip)
+```
+
+Also, if you hop over to the aws console, you will see that your instance is
+deployed. You can also get the ip address from the console. Either way, let's
+move on to the next step.
+
+```bash
+cd ..
+```
+
+Let's use our `init-nitro` playbook to minimally set up a system.
+
+```bash
+ansible-playbook \
+    -i ansible/inventories/dev.yml \
+    -e ip=$instance_ip \
+    --key-file <path-to-your-pem-file> \
+    ./ansible/playbooks/init-nitro.yml
+```
+
+Personally, I like to use the nix package manager in my development
+environments.  If you would like to use nix, you can run the following playbook.
+
+```bash
+ansible-playbook \
+    -i ansible/inventories/dev.yml \
+    -e ip=$ip \
+    --key-file <path-to-your-pem-file> \
+    ./ansible/playbooks/init-nix.yml
+```
+
+Now, you can ssh into the instance and start hacking away on your project
+with nitro.
+
+```bash
+ssh -i <path-to-your-pem-file> ec2-user@$ip
+```
+
+## Cleaning up
+
+Once you are done, please remember to clean up your infrastructure.
+
+```bash
+cd terraform
+terraform destroy
+```
 
 
-To set up, first, we will need a place to store NED secrets.  Let's put that in our
-home directory.
 
-    mkdir -p $HOME/secrets/ned
-
-Next, you will need AWS credentials in a CSV. (Creating credentials for Amazon
-is well documented online or ask internally if you need a hand.) Here, we will
-assume the file is called `aws--bob-dev.csv`.  Put the creds file in your
-secrets folder (but not necessarily the NED secrets folder).  For example:
-
-    mv <wherever-file-was> $HOME/secrets/aws--bob-dev.csv
-
-Go to the NED project root and create a config on your system.  (Note that you
-may need to create some folders):
-
-    mkdir -p $HOME/.config/bky/ned
-    python -m ned config > $HOME/.config/bky/ned/config.toml
-
-Be default, NED will look for the config file in
-`$HOME/.config/bky/ned/config.toml`.
-If you want to place the config in a different directory, you can set that location
-through in the environment variable `BKY_NED_CONFIG_FILE`.
-
-In the config file, set the variables. I like to set these values
-with some info that will help me if I am looking in the aws console. For
-example, since this is the sequencer dev server for bob-dev, I would use (note
-that the values do not need to be the same nor do they need to be different.):
-
-    # Assuming that $HOME is "/home/bob"
-
-    [ned.aws]
-    cred_file = /home/bob/secrets/aws--bob-dev.csv
-    secrets_folder = /home/bob/secrets/ned/
-    instance_name = "seq-dev--bob-dev"
-    key_name = "seq-dev--bob-dev"
-    region = "us-east-1"
-    security_group = "mwittie-testing"
-
-A few things to note, the values for `cred_file` and `secrets_foler` must be an
-absolute paths. The value for `region` should be `us-east-1`. (Other regions may
-work, however, this project uses a specific instance type that is not available
-in all regions.) *WARNING* It is assumed that the security group is already
-created and configured properly. The value "mwittie-testing" works but card
-[BKY-2779](https://blocky.atlassian.net/browse/BKY-2779) will add functionality
-to set up security groups with code.
-
-## Using NED
-
-The `ned` command provides (opinionated) tools for Nitro Enclave
-Deployment (NED).  Some tools including key management, DNS, and
-setup/teardown of
-EC2 Nitro infrastructure.  If you only want to use the tool, you should
-still setup the config and secrets as described in the previous section. You can
-can install `ned` locally by running the following commands from the root
-directory.
-
-    poetry build
-    pip install .
-
-And if all goes well, familiarize yourself with the command
-
-    ned --help
-
-Create an EC2 instance described in the config file
-
-    ned key create
-    ned instance create
-
-See installed infrastructure
-
-    ned key list
-    ned instance list
-
-Tear down the infrastructure
-
-    ned key delete
-    ned instance terminate
-
-And you can even run the project's live tests using the installed version!
-
-    pytest --pyned="ned" tests/live

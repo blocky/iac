@@ -1,0 +1,39 @@
+- name: Setup Nitro
+  hosts: all
+  become: yes
+  tasks:
+    - name: Enable nitro tools though yum
+      command: amazon-linux-extras enable aws-nitro-enclaves-cli
+
+    - name: Install packages
+      yum:
+        name:
+          - aws-nitro-enclaves-cli
+          - aws-nitro-enclaves-cli-devel
+        state: latest
+
+    - name: Set the enclave memory allocation
+      replace:
+        path: /etc/nitro_enclaves/allocator.yaml
+        regexp: 'memory_mib: [0-9]+'
+        replace: 'memory_mib: 3072'
+
+    - name: Add ec2-user to groups
+      user:
+        name: ec2-user
+        groups:
+          - ne
+          - docker
+        append: yes
+
+    - name: Start nitro enclave service and start on reboot
+      service:
+        name: nitro-enclaves-allocator.service
+        state: started
+        enabled: yes
+
+    - name: Start docker daemon and start on reboot
+      service:
+        name: docker
+        state: started
+        enabled: yes
