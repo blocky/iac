@@ -26,7 +26,7 @@
           - docker
         append: yes
 
-    - name: Start nitro enclalave service and start on reboot
+    - name: Start nitro enclave service and start on reboot
       service:
         name: nitro-enclaves-allocator.service
         state: started
