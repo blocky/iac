@@ -22,6 +22,7 @@ resource "aws_security_group" "nitro" {
   name = "${var.instance_name}-security-group"
 
   ingress {
+    description = "SSH from anywhere"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -29,6 +30,7 @@ resource "aws_security_group" "nitro" {
   }
 
   egress {
+    description = "Allow all traffic"
     from_port   = 0
     to_port     = 0
     protocol    = -1
