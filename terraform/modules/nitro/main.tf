@@ -3,10 +3,10 @@ provider "aws" {
 }
 
 resource "aws_instance" "nitro" {
-  ami               = "ami-0dfcb1ef8550277af"
-  instance_type     = "c5a.xlarge"
-  key_name          = var.key_pair_name
-  security_groups   = [aws_security_group.nitro.name]
+  ami             = "ami-0dfcb1ef8550277af"
+  instance_type   = "c5a.xlarge"
+  key_name        = var.key_pair_name
+  security_groups = [aws_security_group.nitro.name]
 
 
   tags = {
