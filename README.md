@@ -16,7 +16,7 @@ tools back if they are more generally useful.
 
 To get started, fork and clone the repo.
 
-Next, you will want to crate a configuration for the infrastructure that
+Next, you will want to create a configuration for the infrastructure that
 you would like to run.  To do so, create a file `terraform/main.tf` that
 describes your development infrastructure.  For example,
 my `main.tf` looks like this:
