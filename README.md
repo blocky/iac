@@ -14,6 +14,10 @@ and not be used for managing standing infrastructure.  As such, you will
 probably want to fork this repo, make it your own, and maybe contribute some
 tools back if they are more generally useful.
 
+It uses:
+- [terraform](https://www.terraform.io/) (tested with v 1.9.3)
+- [ansible](https://www.ansible.com/) (tested with v 2.10.8)
+
 To get started, fork and clone the repo.
 
 Next, you will want to create a configuration for the infrastructure that
