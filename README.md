@@ -26,15 +26,33 @@ describes your development infrastructure.  For example,
 my `main.tf` looks like this:
 
 ```hcl
+terraform {
+  required_version = ">= 1.7.0"
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "5.58.0"
+    }
+  }
+}
+
+provider "aws" {
+  # Note: Not all nitro-enabled instance types or amis are available in all regions. For now, use `us-east-1` to ensure compatibility with the module.
+  region = "us-east-1"
+}
+
+# You can change the name of the module to be unique if you include multiple instances of this module in your main.tf file.
 module "nitro_dev" {
   source = "./modules/nitro"
-  instance_name = "dlm-terraform-test"
-  key_pair_name = "dlm-dev"
+
+  # Change the following to your own values
+  instance_name = "an-instance-name"
+  key_pair_name = "your-key-pair-name"
 }
 
 output "nitro_dev_instance_ip" {
   description = "The public IP address of the instance"
-  value       = module.nitro_dev.instance_public_ip
+  value = module.nitro_dev.instance_public_ip
 }
 ```
 
