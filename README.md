@@ -109,7 +109,7 @@ environments.  If you would like to use nix, you can run the following playbook.
 ```bash
 ansible-playbook \
     -i ansible/inventories/dev.yml \
-    -e ip=$ip \
+    -e ip=$instance_ip \
     --key-file $key_file \
     ./ansible/playbooks/init-nix.yml
 ```
