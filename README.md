@@ -58,7 +58,12 @@ output "nitro_dev_instance_ip" {
 
 For the "key_pair_name", you will need to have a key pair already created in
 AWS and the private key on your local machine.  Below, we will refer to the
-location of this key on your local machine as `<path-to-your-pem-file>`.
+location of this key on your local machine as `<path-to-your-pem-file>`. You
+can set this as an environment variable for later use like so:
+
+```bash
+key_file=<path-to-your-pem-file>
+```
 
 You will likely want to create an output with the ip address of the
 instance that is created so that you can use it later in Ansible playbooks.
@@ -94,7 +99,7 @@ Let's use our `init-nitro` playbook to minimally set up a system.
 ansible-playbook \
     -i ansible/inventories/dev.yml \
     -e ip=$instance_ip \
-    --key-file <path-to-your-pem-file> \
+    --key-file $key_file \
     ./ansible/playbooks/init-nitro.yml
 ```
 
@@ -105,7 +110,7 @@ environments.  If you would like to use nix, you can run the following playbook.
 ansible-playbook \
     -i ansible/inventories/dev.yml \
     -e ip=$ip \
-    --key-file <path-to-your-pem-file> \
+    --key-file $key_file \
     ./ansible/playbooks/init-nix.yml
 ```
 
@@ -113,7 +118,7 @@ Now, you can ssh into the instance and start hacking away on your project
 with nitro.
 
 ```bash
-ssh -i <path-to-your-pem-file> ec2-user@$ip
+ssh -i $key_file ec2-user@$instance_ip
 ```
 
 ## Cleaning up
@@ -124,6 +129,3 @@ Once you are done, please remember to clean up your infrastructure.
 cd terraform
 terraform destroy
 ```
-
-
-
